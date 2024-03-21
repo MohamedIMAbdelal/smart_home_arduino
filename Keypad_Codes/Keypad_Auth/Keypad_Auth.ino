@@ -21,10 +21,10 @@ byte colPins[COLS] = {5, 4, 3, 2}; // Columns 0 to 3
 // Create the Keypad object
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 char enteredPassword[4];//store entered password entered by user 
-byte i = 0;
+byte i = 0;//counter to  iterate over entered password
 char correctPassword[4];// store correct password
-bool setPasswordMode = true;
-bool isTruePassword = false;
+bool setPasswordMode = true;//to switch between setting password and entering password
+bool isTruePassword = true;
 // void setPassword(void)
 // {
 //   char passKey = keypad_01.getKey();
@@ -76,7 +76,7 @@ void loop() {
       correctPassword[i] = key;
       i++;
     }
-    else if(setPasswordMode)
+    else 
     {
       enteredPassword[i] = key;
       i++;
@@ -92,21 +92,27 @@ void loop() {
   	  {
         Serial.print(enteredPassword[j]);
         if(enteredPassword[j] != correctPassword[j])
+        {
+          isTruePassword = false;
           break;
+        }
+          
   	  }
-      if(!isTruePassword)
-        Serial.println("Password is Wrong");
-      else
-        Serial.println("Password is Correct");
+      
     }
     for(byte j = 0;j < 4;j++)
 //   	{
   		Serial.print(correctPassword[j]);
 //   	}
-    
     i = 0;
     setPasswordMode = false;
-    Serial.println();
+    if(!isTruePassword)
+        Serial.println("Password is Wrong");
+     else
+        Serial.println("Password is Correct");
+      Serial.println();
+    
+    
   }
   
 }
