@@ -31,7 +31,7 @@ char symbols[6] = {'A','B','C','D','#','*'};
 
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 void accessSymbols(char symbol);
-void enterPassword(char key);
+void enterPassword();
 void passwordCheck();
 void confirmPassword();
 void resetPassword();
@@ -43,12 +43,12 @@ void setup() {
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop() {
   // Get the key pressed on the keypad
-  label:
-  char key = mykeypad.getKey();
-  enterPassword(key);
+  // label:
+  // char key = mykeypad.getKey();
+  enterPassword();
   passwordCheck();
   
-  // // Check if a key is pressed
+  // Check if a key is pressed
   // if (key) {
   //   // Print the key to the serial monitor
   //   Serial.println(key);
@@ -103,7 +103,8 @@ void accessSymbols(char symbol)
   for(byte l = 0;l < 6;l++)
   {
 
-    switch (symbol):
+    switch (symbol)
+    {
       case 'A':
         resetPassword();
         break;
@@ -114,12 +115,15 @@ void accessSymbols(char symbol)
         clearPassword();
         break;
       case 'D':
-        enterPasswod();
+        enterPassword();
         break;
+    }
   }
 }
-void enterPassword(char key)//local key has same name
+void enterPassword()//local key has same name
 {
+  label:
+  char key = mykeypad.getKey();
   // Check if a key is pressed
   if (key) {
     // Print the key to the serial monitor
@@ -168,4 +172,5 @@ void passwordCheck()
     else
          Serial.println("Password is Correct");
     isTruePassword = false;
+	}
 }
