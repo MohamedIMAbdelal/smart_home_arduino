@@ -43,7 +43,7 @@ void setup() {
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop() {
   enterPassword();
-  passwordCheck();
+  // passwordCheck();
   
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
@@ -56,10 +56,10 @@ void optionMenu(char symbol)
         resetPassword();//changes in correct password array
         break;
       case 'B':
-        // confirmPassword();
+        // confirmPassword();// no confirm but only check 
         break;
       case 'C':
-        // clearPassword();
+        clearPassword();
         break;
       case 'D':
         passwordCheck();
@@ -70,7 +70,7 @@ void optionMenu(char symbol)
 void enterPassword()
 {
   
-  // label:
+  label:
   char key = mykeypad.getKey();
   // Check if a key is pressed
   if (key) {
@@ -78,12 +78,19 @@ void enterPassword()
     Serial.println(key);
     for(byte rows = 0;rows < ROWS;rows++)
     {
-      if(key == keys[rows][3] || key == keys[3][2] || key == keys[3][0])
+      if(key == keys[rows][3])
       {
         // Serial.println("Enter only numeric Values from 0 to 9");
         optionMenu(key);//goes to option menu to choose from it a key
-   		  // goto label;
+   		  goto label;
         // break;
+      }
+      else if(key == keys[3][2] || key == keys[3][0])
+      {
+        Serial.println("Enter only numeric Values from 0 to 9");
+        // optionMenu(key);//goes to option menu to choose from it a key
+   		  goto label;
+        break;
       }
     }
     
@@ -106,22 +113,23 @@ bool passwordCheck()
           break;
         }
   
-    }
+      }
     Serial.println();
     i = 0;
+    bool check = false; // return final value
     if(countWrong)
     {
       Serial.println("Password is Wrong");
-      return false ;
+      check = false;
     }
         
     else
     {
       Serial.println("Password is Correct");
-      return true;
+      check = true;
     }
     countWrong = 0;//reset count to zero
-
+    return check;
     
 	}
 }
@@ -134,39 +142,56 @@ void resetPassword()
     enterPassword();
   }
   
-  for(byte p = 0;p < 4;p++)
-  {
-    Serial.print(enteredPassword[p]);
-  }
-  for(byte p = 0;p < 4;p++)
-  {
-    Serial.print(correctPassword[p]);
-  }
-  Serial.println(i);
+  // for(byte p = 0;p < 4;p++)
+  // {
+  //   Serial.print(enteredPassword[p]);
+  // }
+  // for(byte p = 0;p < 4;p++)
+  // {
+  //   Serial.print(correctPassword[p]);
+  // }
+  // Serial.println(i);i = 4
   if(passwordCheck())
   {
-    // i = 0;
+    i = 0;
     Serial.println("Enter new password : ");
-    char key = mykeypad.getKey();
+    while(i < 4)
+    {
+      char key = mykeypad.getKey();
     // Check if a key is pressed
-    if (key) {
-    // Print the key to the serial monitor
-    Serial.println(key);
-    correctPassword[i] = key;
-    i++;
+      if (key) 
+      {
+        // Print the key to the serial monitor
+        Serial.println(key);
+        correctPassword[i] = key;
+        i++;
     
+      }
     }
+    
   }
+  i = 0;
+  Serial.print("Your New Password is : ");
   for(byte p = 0;p < 4;p++)
   {
     Serial.print(correctPassword[p]);
   }
+  Serial.println();
 }
 
 void clearPassword()
 {
-//  Serial.clear();
-//  enteredPassword[4] = {''};
+  for(byte k = 0; k < 4;k++)
+  {
+    enteredPassword[k] = '\0';//empty array
+  }
+  for(byte p = 0;p < 4;p++)
+  {
+     Serial.print(enteredPassword[p]);
+  }
+  i = 0;
+  Serial.println("Password is Cleared");
+  Serial.println("Enter a Password of 4 numeric digits please :");
 }
 void confirmPassword()
 {
