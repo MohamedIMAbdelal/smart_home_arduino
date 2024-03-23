@@ -25,15 +25,27 @@ char enteredPassword[4];//store entered password entered by user in an array
 byte i = 0;//global counter to  iterate over entered password
 char correctPassword[4] = {'1','2','3','4'};// store correct password in an array
 byte countWrong = 0; // counts wrong digits entered
-char symbols[6] = {'A','B','C','D','#','*'};
+char symbols[6] = {'A','B','C','D','#','*'};//* for outside authentaction and # for inside authentaction
+byte countWrongPasswords = 0;
 
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 void optionMenu(char symbol);
 void enterPassword();
 bool passwordCheck();
-void confirmPassword();
+// void confirmPassword();
+void callPolice();//instead of confirm function
 void resetPassword();
 void clearPassword();
+void noRepeatedPassword();
+void rightPassword();
+void wrongPassword_firstTime();
+void wrongPassword_secondTime();
+void wrongPassword_thirdTime();
+void wrongPassword_fourthTime();
+void WrongPasswords(byte w);
+void lockSystem();
+void outsideAuth();
+void insideAuth();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
@@ -44,7 +56,7 @@ void setup() {
 void loop() {
   enterPassword();
   // passwordCheck();
-  
+  // WrongPasswords(countWrongPasswords);
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
 
@@ -57,12 +69,19 @@ void optionMenu(char symbol)
         break;
       case 'B':
         // confirmPassword();// no confirm but only check 
+        // callPolice();
         break;
       case 'C':
         clearPassword();
         break;
       case 'D':
         passwordCheck();
+        break;
+      case '*':
+        // outsideAuth();
+        break;
+      case '#':
+        // insideAuth();
         break;
     }
 }
@@ -121,14 +140,18 @@ bool passwordCheck()
     {
       Serial.println("Password is Wrong");
       check = false;
+      countWrongPasswords++;
     }
         
     else
     {
       Serial.println("Password is Correct");
       check = true;
+      // rightPassword();
+      countWrongPasswords = 0;
     }
     countWrong = 0;//reset count to zero
+    WrongPasswords(countWrongPasswords);
     return check;
     
 	}
@@ -178,6 +201,7 @@ void resetPassword()
     Serial.print(correctPassword[p]);
   }
   Serial.println();
+  noRepeatedPassword();
 }
 
 void clearPassword()
@@ -197,4 +221,99 @@ void clearPassword()
 void confirmPassword()
 {
 
+}
+void callPolice()
+{
+
+}
+void noRepeatedPassword()
+{
+  char oldPassword[4];
+  char newPassword[4];
+  bool isIdentical = true;
+  for(byte k = 0;k < 4;k++)
+  {
+    oldPassword[k] = enteredPassword[k];
+    newPassword[k] = correctPassword[k];
+    if(oldPassword[k] != newPassword[k])
+    {
+      isIdentical = false;
+    }
+  } 
+  if(isIdentical)
+  {
+    Serial.println("Enter different Password from the old one");
+    resetPassword();
+  }
+  else
+  {
+    Serial.println("Password is not Identical");
+  }
+}
+void WrongPasswords(byte w)
+{
+  if(w <= 4)
+  {
+    switch(w)
+    {
+      case 0 :
+        rightPassword();
+        break;
+      case 1 :
+        wrongPassword_firstTime();
+        break;
+      case 2 :
+        wrongPassword_secondTime();
+        break;
+      case 3 :
+        wrongPassword_thirdTime();
+        break;
+      case 4 :
+        wrongPassword_fourthTime();
+        break;
+    }
+  }
+  
+  else if(w > 4)
+  {
+    lockSystem();
+  }
+}
+void rightPassword()
+{
+  Serial.println("i am Right Password");
+  // lighting system code here 
+  //buzzer code here
+  //servo code to open door code here 
+}
+void wrongPassword_firstTime()
+{
+  Serial.println("i am Wrong Password #1");
+  // lighting system code here 
+  //buzzer code here
+}
+void wrongPassword_secondTime()
+{
+  Serial.println("i am Wrong Password #2");
+  // lighting system code here 
+  //buzzer code here
+
+}
+void wrongPassword_thirdTime()
+{
+  Serial.println("i am Wrong Password #3");
+  // lighting system code here 
+  //buzzer code here
+
+}
+void wrongPassword_fourthTime()
+{
+  Serial.println("i am Wrong Password #4");
+  // lighting system code here 
+  //buzzer code here
+  //iot code here to control from App
+}
+void lockSystem()
+{
+  Serial.println("System Locked Entirely");
 }
