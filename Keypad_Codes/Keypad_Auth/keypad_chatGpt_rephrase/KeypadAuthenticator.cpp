@@ -27,54 +27,233 @@ void KeypadAuthenticator::loop() {
 }
 
 void KeypadAuthenticator::optionMenu(char symbol) {
-  // Implementation of option menu
+  switch (symbol)
+    {
+      case 'A':
+        resetPassword();//changes in correct password array
+        break;
+      case 'B':
+        // confirmPassword();// no confirm but only check 
+        // callPolice();
+        break;
+      case 'C':
+        clearPassword();
+        break;
+      case 'D':
+        passwordCheck();
+        break;
+      case '*':
+        // outsideAuth();
+        break;
+      case '#':
+        // insideAuth();
+        break;
+    }
 }
 
 void KeypadAuthenticator::enterPassword() {
-  // Implementation of enter password logic
+  label:
+  char key = mykeypad.getKey();
+  // Check if a key is pressed
+  if (key) {
+    // Print the key to the serial monitor
+    Serial.println(key);
+    for(byte rows = 0;rows < ROWS;rows++)
+    {
+      if(key == keys[rows][3])
+      {
+        // Serial.println("Enter only numeric Values from 0 to 9");
+        optionMenu(key);//goes to option menu to choose from it a key
+   		  goto label;
+        // break;
+      }
+      else if(key == keys[3][2] || key == keys[3][0])
+      {
+        Serial.println("Enter only numeric Values from 0 to 9");
+        // optionMenu(key);//goes to option menu to choose from it a key
+   		  goto label;
+        break;
+      }
+    }
+    
+    enteredPassword[i] = key;
+    i++;
+    
+  }
 }
 
 bool KeypadAuthenticator::passwordCheck() {
-  // Implementation of password check logic
+  if(i >= 4) // must be 4 casuse less than 4 will not store 4 digits
+  {
+      for(byte j = 0;j < 4;j++)
+  	  {
+        if(enteredPassword[j] != correctPassword[j])
+        {
+          countWrong++;
+          break;
+        }
+  
+      }
+    Serial.println();
+    i = 0;
+    bool check = false; // return final value
+    if(countWrong)
+    {
+      Serial.println("Password is Wrong");
+      check = false;
+      countWrongPasswords++;
+    }
+        
+    else
+    {
+      Serial.println("Password is Correct");
+      check = true;
+      countWrongPasswords = 0;
+    }
+    countWrong = 0;//reset count to zero
+    WrongPasswords(countWrongPasswords);
+    return check;
+    
+	}
 }
 
 void KeypadAuthenticator::resetPassword() {
-  // Implementation of reset password logic
+  Serial.println("Enter old password to check : ");
+  i = 0;
+  while(i < 4)
+  {
+    enterPassword();
+  }
+
+  if(passwordCheck())
+  {
+    i = 0;
+    Serial.println("Enter new password : ");
+    while(i < 4)
+    {
+      char key = mykeypad.getKey();
+    // Check if a key is pressed
+      if (key) 
+      {
+        // Print the key to the serial monitor
+        Serial.println(key);
+        correctPassword[i] = key;
+        i++;
+    
+      }
+    }
+    
+  }
+  i = 0;
+  Serial.print("Your New Password is : ");
+  for(byte p = 0;p < 4;p++)
+  {
+    Serial.print(correctPassword[p]);
+  }
+  Serial.println();
+  noRepeatedPassword();
 }
 
 void KeypadAuthenticator::clearPassword() {
-  // Implementation of clear password logic
+  for(byte k = 0; k < 4;k++)
+  {
+    enteredPassword[k] = '\0';//empty array
+  }
+  for(byte p = 0;p < 4;p++)
+  {
+     Serial.print(enteredPassword[p]);
+  }
+  i = 0;
+  Serial.println("Password is Cleared");
+  Serial.println("Enter a Password of 4 numeric digits please :");
 }
 
 void KeypadAuthenticator::noRepeatedPassword() {
-  // Implementation of no repeated password logic
+  char oldPassword[4];
+  char newPassword[4];
+  bool isIdentical = true;
+  for(byte k = 0;k < 4;k++)
+  {
+    oldPassword[k] = enteredPassword[k];
+    newPassword[k] = correctPassword[k];
+    if(oldPassword[k] != newPassword[k])
+    {
+      isIdentical = false;
+    }
+  } 
+  if(isIdentical)
+  {
+    Serial.println("Enter different Password from the old one");
+    resetPassword();
+  }
+  else
+  {
+    Serial.println("Password is not Identical");
+  }
 }
 
 void KeypadAuthenticator::rightPassword() {
-  // Implementation of right password logic
+  Serial.println("i am Right Password");
+  // lighting system code here 
+  //buzzer code here
+  //servo code to open door code here 
 }
 
 void KeypadAuthenticator::wrongPassword_firstTime() {
-  // Implementation of wrong password first time logic
+  Serial.println("i am Wrong Password #1");
+  // lighting system code here 
+  //buzzer code here
 }
 
 void KeypadAuthenticator::wrongPassword_secondTime() {
-  // Implementation of wrong password second time logic
+  Serial.println("i am Wrong Password #2");
+  // lighting system code here 
+  //buzzer code here
 }
 
 void KeypadAuthenticator::wrongPassword_thirdTime() {
-  // Implementation of wrong password third time logic
+  Serial.println("i am Wrong Password #3");
+  // lighting system code here 
+  //buzzer code here
 }
 
 void KeypadAuthenticator::wrongPassword_fourthTime() {
-  // Implementation of wrong password fourth time logic
+  Serial.println("i am Wrong Password #4");
+  // lighting system code here 
+  //buzzer code here
+  //iot code here to control from App
 }
 
 void KeypadAuthenticator::WrongPasswords(byte w) {
-  // Implementation of wrong passwords logic
+  if(w <= 4)
+  {
+    switch(w)
+    {
+      case 0 :
+        rightPassword();
+        break;
+      case 1 :
+        wrongPassword_firstTime();
+        break;
+      case 2 :
+        wrongPassword_secondTime();
+        break;
+      case 3 :
+        wrongPassword_thirdTime();
+        break;
+      case 4 :
+        wrongPassword_fourthTime();
+        break;
+    }
+  }
+  
+  else if(w > 4)
+  {
+    lockSystem();
+  }
 }
 
 void KeypadAuthenticator::lockSystem() {
-  // Implementation of lock system logic
+    Serial.println("System Locked Entirely");
 }
 
