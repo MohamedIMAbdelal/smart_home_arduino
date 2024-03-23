@@ -137,6 +137,7 @@ bool passwordCheck()
 void resetPassword()
 {
   Serial.println("Enter old password to check : ");
+  i = 0;
   while(i < 4)
   {
     enterPassword();
