@@ -32,6 +32,8 @@ byte countWrongPasswords = 0;
 bool isLockedSystem = false;
 bool isVerfied = true;
 bool isNotReset = true;//to stop switching between two modes
+unsigned long countMillis = 0;
+//countMillis = millis();
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 void optionMenu(char symbol);
 void enterPassword();
@@ -57,11 +59,12 @@ void inside_wrongPassword_firstTime();
 void inside_wrongPassword_secondTime();
 void inside_wrongPassword_thirdTime();
 void inside_wrongPassword_fourthTime();
+bool onTime();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
   Serial.println("Enter a Password of 4 numeric digits please :");
-  
+  countMillis = millis();
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop() {
@@ -340,7 +343,11 @@ void rightPassword()
   Serial.println("i am Right Password");
   if(isNotReset)
   {
+    delay(1000); //60 seconds delay so user can enter from home freely
+    // countMillis = millis();
+    Serial.println(countMillis);
     insideAuth();//only works in case if right password entered outside first
+    // countMillis = millis();
   }
   // insideAuth();//only works in case if right password entered outside first
   // lighting system code here 
@@ -394,6 +401,8 @@ void insideAuth()
     // clearPassword();
     Serial.println("Please Enter inside Home Password to verify : ");
     passwordLength = 6;
+    // countMillis = millis();//timer 
+    Serial.println(countMillis);
     enterPassword();
     isVerfied = false;//to enter password one time after verfication
   }
@@ -407,21 +416,46 @@ void gettingOutOfHome()
 }
 void inside_rightPassword()
 {
-
+  Serial.println(countMillis);
+  if(onTime())
+  {
+    Serial.println("Congrataulations You are not a Thief ");
+  }
 }
 void inside_wrongPassword_firstTime()
 {
-
+  Serial.println("i am Wrong Password #1");
+   // lighting system code here 
+  //buzzer code here
 }
 void inside_wrongPassword_secondTime()
 {
-
+  Serial.println("i am Wrong Password #2");
+   // lighting system code here 
+  //buzzer code here
 }
 void inside_wrongPassword_thirdTime()
 {
-
+  Serial.println("i am Wrong Password #3");
+   // lighting system code here 
+  //buzzer code here
 }
-void inside_wrongPassword_fourthTime()
+void inside_wrongPassword_fourthTime()// for App only
 {
-  
+   // lighting system code here 
+  //buzzer code here
+}
+bool onTime()
+{
+  Serial.println(countMillis);
+  if(countMillis > 1000)
+  {
+    Serial.println("Timeout please wait 10 minutes to restart System Again");
+    countMillis = 0;
+    return false;
+  }
+  else 
+  {
+    return true;
+  }
 }
