@@ -21,19 +21,24 @@ byte colPins[COLS] = {5, 4, 3, 2}; // Columns 0 to 3
 // Create the Keypad object
 Keypad mykeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);//takes function that takes keys as a map
 //////////////////////////////////GLOBAL VARIABLES//////////////////////////////////////////
-char enteredPassword[4];//store entered password entered by user in an array
+byte passwordLength = 4;//default value for outside Authentaction only
+char enteredPassword[6];//store entered password entered by user in an array
 byte i = 0;//global counter to  iterate over entered password
-char correctPassword[4] = {'1','2','3','4'};// store correct password in an array
+char outsideCorrectPassword[4] = {'1','2','3','4'};// store correct password in an array
+char insideCorrectPassword[6] = {'1','4','7','8','5','2'};// store correct password in an array
 byte countWrong = 0; // counts wrong digits entered
-char symbols[6] = {'A','B','C','D','#','*'};//* for outside authentaction and # for inside authentaction
+// char symbols[6] = {'A','B','C','D','#','*'};//* for outside authentaction and # for inside authentaction
 byte countWrongPasswords = 0;
 bool isLockedSystem = false;
+bool isVerfied = true;
+bool isNotReset = true;//to stop switching between two modes
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 void optionMenu(char symbol);
 void enterPassword();
 bool passwordCheck();
 // void confirmPassword();
 void callPolice();//instead of confirm function
+void generateNewPassword();//this function may be used in case user forget the real password and enters it through phone
 void resetPassword();
 void clearPassword();
 void noRepeatedPassword();
@@ -46,6 +51,12 @@ void WrongPasswords(byte w);
 void lockSystem();
 void outsideAuth();
 void insideAuth();
+void gettingOutOfHome();
+void inside_rightPassword();
+void inside_wrongPassword_firstTime();
+void inside_wrongPassword_secondTime();
+void inside_wrongPassword_thirdTime();
+void inside_wrongPassword_fourthTime();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
@@ -54,7 +65,8 @@ void setup() {
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop() {
-  lockSystem();
+  // lockSystem();
+  outsideAuth();
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
 
@@ -77,6 +89,7 @@ void optionMenu(char symbol)
         break;
       case '*':
         // outsideAuth();
+        gettingOutOfHome();
         break;
       case '#':
         // insideAuth();
@@ -104,8 +117,8 @@ void enterPassword()
       }
       else if(key == keys[3][2] || key == keys[3][0])
       {
-        Serial.println("Enter only numeric Values from 0 to 9");
-        // optionMenu(key);//goes to option menu to choose from it a key
+        // Serial.println("Enter only numeric Values from 0 to 9");
+        optionMenu(key);//goes to option menu to choose from it a key
    		  goto label;
         break;
       }
@@ -119,17 +132,27 @@ void enterPassword()
 
 bool passwordCheck()
 {
-  if(i >= 4) // must be 4 casuse less than 4 will not store 4 digits
+  if(i >= passwordLength) // must be 6 casuse less than 6 will not store 6 digits
   {
-      for(byte j = 0;j < 4;j++)
+      for(byte j = 0;j < passwordLength;j++)
   	  {
         // Serial.print(enteredPassword[j]);
-        if(enteredPassword[j] != correctPassword[j])
+        if(passwordLength == 4)
         {
-          countWrong++;
-          break;
+          if(enteredPassword[j] != outsideCorrectPassword[j])
+          {
+            countWrong++;
+            break;
+          }
         }
-  
+        else if(passwordLength == 6)
+        {
+          if(enteredPassword[j] != insideCorrectPassword[j])
+          {
+            countWrong++;
+            break;
+          }
+        }
       }
     Serial.println();
     i = 0;
@@ -159,25 +182,17 @@ void resetPassword()
 {
   Serial.println("Enter old password to check : ");
   i = 0;
-  while(i < 4)
+  isNotReset = false;
+  while(i < passwordLength)
   {
     enterPassword();
   }
-  
-  // for(byte p = 0;p < 4;p++)
-  // {
-  //   Serial.print(enteredPassword[p]);
-  // }
-  // for(byte p = 0;p < 4;p++)
-  // {
-  //   Serial.print(correctPassword[p]);
-  // }
-  // Serial.println(i);i = 4
+ 
   if(passwordCheck())
   {
     i = 0;
     Serial.println("Enter new password : ");
-    while(i < 4)
+    while(i < passwordLength)
     {
       char key = mykeypad.getKey();
     // Check if a key is pressed
@@ -185,8 +200,16 @@ void resetPassword()
       {
         // Print the key to the serial monitor
         Serial.println(key);
-        correctPassword[i] = key;
-        i++;
+        if(passwordLength == 4)
+        {
+          outsideCorrectPassword[i] = key;
+          i++;
+        }
+        else if(passwordLength == 6)
+        {
+          insideCorrectPassword[i] = key;
+          i++;
+        }
     
       }
     }
@@ -194,27 +217,35 @@ void resetPassword()
   }
   i = 0;
   Serial.print("Your New Password is : ");
-  for(byte p = 0;p < 4;p++)
+  for(byte p = 0;p < passwordLength;p++)
   {
-    Serial.print(correctPassword[p]);
+    if(passwordLength == 4)
+        {
+          Serial.print(outsideCorrectPassword[p]);
+        }
+        else if(passwordLength == 6)
+        {
+          Serial.print(insideCorrectPassword[p]);
+        } 
   }
   Serial.println();
   noRepeatedPassword();
+  isNotReset = true;
 }
 
 void clearPassword()
 {
-  for(byte k = 0; k < 4;k++)
+  for(byte k = 0; k < passwordLength;k++)
   {
     enteredPassword[k] = '\0';//empty array
   }
-  for(byte p = 0;p < 4;p++)
+  for(byte p = 0;p < passwordLength;p++)
   {
      Serial.print(enteredPassword[p]);
   }
   i = 0;
   Serial.println("Password is Cleared");
-  Serial.println("Enter a Password of 4 numeric digits please :");
+  Serial.println("Enter a Password of 6 numeric digits please :");
 }
 void confirmPassword()
 {
@@ -226,13 +257,21 @@ void callPolice()
 }
 void noRepeatedPassword()
 {
-  char oldPassword[4];
-  char newPassword[4];
+  char oldPassword[passwordLength];
+  char newPassword[passwordLength];
   bool isIdentical = true;
-  for(byte k = 0;k < 4;k++)
+  for(byte k = 0;k < passwordLength;k++)
   {
     oldPassword[k] = enteredPassword[k];
-    newPassword[k] = correctPassword[k];
+    if(passwordLength == 4)
+        {
+          newPassword[k] = outsideCorrectPassword[k];
+        }
+        else if(passwordLength == 6)
+        {
+          newPassword[k] = insideCorrectPassword[k];
+        }
+    
     if(oldPassword[k] != newPassword[k])
     {
       isIdentical = false;
@@ -252,34 +291,58 @@ void WrongPasswords(byte w)
 {
   if(w <= 3)
   {
-    switch(w)
+    if(passwordLength == 4)
     {
-      case 0 :
-        rightPassword();
-        break;
-      case 1 :
-        wrongPassword_firstTime();
-        break;
-      case 2 :
-        wrongPassword_secondTime();
-        break;
-      case 3 :
-        wrongPassword_thirdTime();
-        break;
-      // case 4 :
-      //   wrongPassword_fourthTime();
-      //   break;
+      switch(w)
+      {
+        case 0 :
+          rightPassword();
+          break;
+        case 1 :
+          wrongPassword_firstTime();
+          break;
+        case 2 :
+          wrongPassword_secondTime();
+          break;
+        case 3 :
+          wrongPassword_thirdTime();
+          break;
+        // case 4 :
+        //   wrongPassword_fourthTime();
+        //   break;
+      }
+    }
+    else if(passwordLength == 6)
+    {
+      switch(w)
+      {
+        case 0 :
+          inside_rightPassword();
+          break;
+        case 1 :
+          inside_wrongPassword_firstTime();
+          break;
+        case 2 :
+          inside_wrongPassword_secondTime();
+          break;
+        case 3 :
+          inside_wrongPassword_thirdTime();
+          break;
+        // case 4 :
+        //   inside_wrongPassword_fourthTime();
+        //   break;
+      }
     }
   }
-  
-  // else if(w == 3)
-  // {
-  //   lockSystem();
-  // }
 }
 void rightPassword()
 {
   Serial.println("i am Right Password");
+  if(isNotReset)
+  {
+    insideAuth();//only works in case if right password entered outside first
+  }
+  // insideAuth();//only works in case if right password entered outside first
   // lighting system code here 
   //buzzer code here
   //servo code to open door code here 
@@ -318,4 +381,47 @@ if(!isLockedSystem)
   {
     enterPassword();
   }
+}
+void outsideAuth()
+{
+  lockSystem();
+}
+void insideAuth()
+{
+  // Serial.println(isVerfied);
+  if(isVerfied)
+  {
+    // clearPassword();
+    Serial.println("Please Enter inside Home Password to verify : ");
+    passwordLength = 6;
+    enterPassword();
+    isVerfied = false;//to enter password one time after verfication
+  }
+  // Serial.println(isVerfied);
+}
+void gettingOutOfHome()
+{
+  Serial.println("System now is locked from inside and user got out !!");
+  passwordLength = 4;
+  isVerfied = true; // so user can access it from inside again
+}
+void inside_rightPassword()
+{
+
+}
+void inside_wrongPassword_firstTime()
+{
+
+}
+void inside_wrongPassword_secondTime()
+{
+
+}
+void inside_wrongPassword_thirdTime()
+{
+
+}
+void inside_wrongPassword_fourthTime()
+{
+  
 }

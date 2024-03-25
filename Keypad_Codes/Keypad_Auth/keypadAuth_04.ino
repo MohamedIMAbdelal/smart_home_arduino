@@ -54,7 +54,8 @@ void setup() {
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop() {
-  lockSystem();
+  // lockSystem();
+  outsideAuth();
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
 
@@ -318,4 +319,8 @@ if(!isLockedSystem)
   {
     enterPassword();
   }
+}
+void outsideAuth()
+{
+  lockSystem();
 }
