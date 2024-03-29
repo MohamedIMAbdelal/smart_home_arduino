@@ -1,0 +1,21 @@
+#define FLAME_SENSOR_PIN A0
+#define BUZZER_PIN 11
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(FLAME_SENSOR_PIN, INPUT);
+}
+
+void loop() {
+  int flameValue = analogRead(FLAME_SENSOR_PIN);
+  Serial.println("Flame Sensor Value: " + String(flameValue));
+
+  if (flameValue < 800) {
+    digitalWrite(BUZZER_PIN, HIGH); 
+  } else {
+    digitalWrite(BUZZER_PIN, LOW); 
+  }
+  
+  delay(100);
+}

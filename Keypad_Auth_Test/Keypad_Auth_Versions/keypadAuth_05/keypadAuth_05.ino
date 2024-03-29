@@ -27,19 +27,21 @@ byte i = 0;//global counter to  iterate over entered password
 char outsideCorrectPassword[4] = {'1','2','3','4'};// store correct password in an array
 char insideCorrectPassword[6] = {'1','4','7','8','5','2'};// store correct password in an array
 byte countWrong = 0; // counts wrong digits entered
-// char symbols[6] = {'A','B','C','D','#','*'};//* for outside authentaction and # for inside authentaction
 byte countWrongPasswords = 0;
-bool isLockedSystem = false;
-bool isVerfied = true;
+bool isLockedSystem = false;//to lock system if user entered it more than 3 times wrong
+bool isVerfied = true;//to enter inside password one time after verifcation
 bool isNotReset = true;//to stop switching between two modes
+bool isConnected = false;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 //countMillis = millis();
+char controlPins[6] = {'1','2','3','4','5','6'};//this array stores keys that can control other aplliances
+char controlPin;
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
-void optionMenu(char symbol);
+char get_key();
+void optionMenu(char);
 void enterPassword();
 bool passwordCheck();
-// void confirmPassword();
 void callPolice();//instead of confirm function
 void generateNewPassword();//this function may be used in case user forget the real password and enters it through phone
 void resetPassword();
@@ -50,7 +52,7 @@ void wrongPassword_firstTime();
 void wrongPassword_secondTime();
 void wrongPassword_thirdTime();
 void wrongPassword_fourthTime();
-void WrongPasswords(byte w);
+void WrongPasswords(byte w);//count wrong passwords number
 void lockSystem();
 void outsideAuth();
 void insideAuth();
@@ -60,7 +62,15 @@ void inside_wrongPassword_firstTime();
 void inside_wrongPassword_secondTime();
 void inside_wrongPassword_thirdTime();
 void inside_wrongPassword_fourthTime();
-bool onTime();
+bool onTime();//count time from enterong home until enters correct password inside
+void controlMenu();
+// char storeControlPin();
+void control_front_door();
+void control_garage_door();
+void control_first_floor_light();
+void control_second_floor_light();
+void control_fire_alarm();
+void control_air_conditoning();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
@@ -73,7 +83,11 @@ void loop() {
   outsideAuth();
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
-
+char get_key()
+{
+  char local_key = mykeypad.getKey();
+  return local_key;
+}
 void optionMenu(char symbol)
 {
     switch (symbol)
@@ -82,8 +96,8 @@ void optionMenu(char symbol)
         resetPassword();//changes in correct password array
         break;
       case 'B':
-        // confirmPassword();// no confirm but only check 
         // callPolice();
+        //generateNewPassword();
         break;
       case 'C':
         clearPassword();
@@ -92,11 +106,11 @@ void optionMenu(char symbol)
         passwordCheck();
         break;
       case '*':
-        // outsideAuth();
         gettingOutOfHome();
         break;
       case '#':
-        // insideAuth();
+        controlMenu();
+        // storeControlPin();
         break;
     }
 }
@@ -105,7 +119,9 @@ void enterPassword()
 {
   
   label:
-  char key = mykeypad.getKey();
+  // char key = mykeypad.getKey();
+  char key = get_key();
+  controlPin = key;
   // Check if a key is pressed
   if (key) {
     // Print the key to the serial monitor
@@ -124,7 +140,7 @@ void enterPassword()
         // Serial.println("Enter only numeric Values from 0 to 9");
         optionMenu(key);//goes to option menu to choose from it a key
    		  goto label;
-        break;
+        // break;
       }
     }
     
@@ -249,9 +265,9 @@ void clearPassword()
   }
   i = 0;
   Serial.println("Password is Cleared");
-  Serial.println("Enter a Password of 6 numeric digits please :");
+  Serial.println("Enter the new Password :");
 }
-void confirmPassword()
+void generateNewPassword()
 {
 
 }
@@ -349,7 +365,7 @@ void rightPassword()
     // Serial.println(countMillis);
     insideAuth();//only works in case if right password entered outside first
     // countMillis = millis();
-     previousTime = millis();
+    //  previousTime = millis();
     // previousTime = currentTime;
   }
   // insideAuth();//only works in case if right password entered outside first
@@ -418,10 +434,11 @@ void gettingOutOfHome()
 void inside_rightPassword()
 {
   // Serial.println(countMillis);
-  if(onTime())
-  {
+  // if(onTime())
+  // {
     Serial.println("Congrataulations You are not a Thief ");
-  }
+  // }
+  isConnected = true;
 }
 void inside_wrongPassword_firstTime()
 {
@@ -448,8 +465,8 @@ void inside_wrongPassword_fourthTime()// for App only
 }
 bool onTime()
 {
-  Serial.println(currentTime);
-  Serial.println(previousTime);
+  // Serial.println(currentTime);
+  // Serial.println(previousTime);
   currentTime = millis();
   if(currentTime - previousTime > 1000)
   {
@@ -460,4 +477,65 @@ bool onTime()
   {
     return true;
   }
+}
+char storeControlPin()
+{
+
+}
+void controlMenu()
+{
+  enterPassword();
+  Serial.println(controlPin);
+  if(isConnected)
+  {
+    switch(controlPin)
+    {
+      case'1':
+      control_front_door();//close or open doors
+      break;
+      case'2':
+      control_first_floor_light();//turn on or off light 
+      break;
+      case'3':
+      control_second_floor_light();//turn on or off light 
+      break;
+      case'4':
+      control_garage_door();//turn on or off light 
+      break;
+      case'5':
+      control_fire_alarm();//close system in case there is false alarm
+      break;
+      case'6':
+      control_air_conditoning();//turn on or off 
+      break;
+      default:
+      Serial.println("Enter a number to control something from 1 >> 6");
+    }
+  }
+  i = 0;
+}
+
+void control_front_door()
+{
+  Serial.println("control front Door Here");
+}
+void control_first_floor_light()
+{
+  Serial.println("control first_floor_light Here");
+}
+void control_second_floor_light()
+{
+  Serial.println("control second_floor_light Here");
+}
+void control_garage_door()
+{
+  Serial.println("control garage_door Here");
+}
+void control_fire_alarm()
+{
+  Serial.println("control fire_alarm Here");
+}
+void control_air_conditoning()
+{
+  Serial.println("control air_conditoning Here");
 }
