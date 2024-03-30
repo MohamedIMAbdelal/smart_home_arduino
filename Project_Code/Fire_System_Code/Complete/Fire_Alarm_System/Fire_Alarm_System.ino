@@ -42,4 +42,8 @@ void fireAction() {
     // Serial.println(millis());
     digitalWrite(BUZZER_PIN, HIGH);
   }
+  else
+  {
+    digitalWrite(BUZZER_PIN, LOW);
+  }
 }
