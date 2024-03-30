@@ -19,3 +19,55 @@ void loop() {
   
   delay(100);
 }
+/////////////////////////////////////
+////////////////global variables
+#define FLAME_SENSOR_PIN A0
+#define BUZZER_PIN 2
+const uint16_t threshold = 200; // to store limits that can detect fire
+uint32_t eventTime = 0; // to store time when event occurred
+bool isDetected = false;
+////////////////global functions
+void detectFire(); // detect fire presence
+void fireAction(); // take some action like buzzer or function
+uint32_t howLongFire(); // tells the time of fire to take an action
+
+////////////////setup
+void setup() {
+  Serial.begin(9600);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(FLAME_SENSOR_PIN, INPUT);
+}
+
+////////////////loop
+void loop() {
+  detectFire();
+  uint32_t elapsedTime = howLongFire();
+  Serial.println(elapsedTime);
+  if (elapsedTime >= 1000 && isDetected)
+  { // 1 second interval
+    fireAction();
+  }
+  delay(100); // debounce delay
+}
+
+////////////////implementation
+void detectFire() {
+  uint16_t flameValue = analogRead(FLAME_SENSOR_PIN);
+  Serial.println("Flame Sensor Value: " + String(flameValue));
+
+  if (flameValue < threshold) {
+    eventTime = millis();//5000
+    isDetected = true;
+  }
+  fireAction();//call when there is fire
+}
+
+uint32_t howLongFire() {
+  uint32_t currentTime = millis();//5001
+  return currentTime - eventTime;
+}
+
+void fireAction() 
+{
+  digitalWrite(BUZZER_PIN, HIGH);
+}
