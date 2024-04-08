@@ -1,14 +1,18 @@
 #include <Keypad.h> //include Keypad Library
 #include <Servo.h> //include Servo Library
-
-#define servoPin 10 // Change this to the pin connected to your servo motor
-Servo myServo; // Create a servo object
+//pwm pins (3,5,6,9,10,11) only
+#define outsideServoPin 10 // Change this to the pin connected to your servo motor
+#define insideServoPin 11 // Change this to the pin connected to your servo motor
+Servo outsideServo; // Create a servo object for outside gate
+Servo insideServo; //create a servo object for inside front door
 byte rightAngle = 90;
-byte zeroAngle = 0;
+byte zeroAngle = 180;
 //led for detection
-#define redLed 11
+#define redLed 16//A2
 #define greenLed 12
 #define buzzerPin 13
+#define firstFloorLed 15//A1
+#define touchPin 14 //A0 digital to analog
 // Define the rows and columns of the keypad 4x4
 const byte ROWS = 4; // Four rows
 const byte COLS = 4; // Four columns
@@ -41,6 +45,7 @@ bool isLockedSystem = false;//to lock system if user entered it more than 3 time
 bool isVerfied = true;//to enter inside password one time after verifcation
 bool isNotReset = true;//to stop switching between two modes
 bool isConnected = false;
+bool isDetected = false;
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 char get_key();
 void optionMenu(char);
@@ -75,16 +80,28 @@ void control_air_conditoning();
 void outside_rightPassword_mode();
 void outside_wrongPassword_mode();
 void buzzer_sirenSound();
+void isVerfied_fingerPrints();
+void touchSensor_mode();
+void inside_rightPassword_mode();
+void inside_wrongPassword_mode();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
   Serial.println("Enter a Password of 4 numeric digits please :");
   //init servo
-  myServo.attach(servoPin);
+  outsideServo.attach(outsideServoPin);
+  insideServo.attach(insideServoPin);
   //init leds and buzzers
   pinMode(redLed , OUTPUT);
   pinMode(greenLed , OUTPUT);
   pinMode(buzzerPin , OUTPUT);
+  pinMode(firstFloorLed , OUTPUT);
+  pinMode(touchPin , INPUT);
+ 
+  insideServo.write(zeroAngle);
+  outsideServo.write(zeroAngle);
+  //  Serial.println(outsideServo.read());
+  // Serial.println(insideServo.read());
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop()
@@ -364,29 +381,33 @@ void buzzer_sirenSound()
 }
 void outside_rightPassword_mode()
 {
-  myServo.write(rightAngle);
+  outsideServo.write(rightAngle);
   digitalWrite(greenLed, HIGH);
   digitalWrite(redLed, LOW);
   digitalWrite(buzzerPin, LOW);
+  while(!isDetected)
+  {
+    isVerfied_fingerPrints();
+    touchSensor_mode();
+  }
 }
 void outside_wrongPassword_mode()
 {
-  myServo.write(zeroAngle);
+  outsideServo.write(zeroAngle);
   digitalWrite(greenLed, LOW);
   digitalWrite(redLed, HIGH);
   if(countWrongPasswords > 2)
   {
     buzzer_sirenSound();
   }
-  
 }
 void rightPassword()
 {
   if(isNotReset)
   {
     Serial.println("i am Right Password");
-    delay(1000); //60 seconds delay so user can enter from home freely
     outside_rightPassword_mode();
+    delay(1000); //60 seconds delay so user can enter from home freely
     insideAuth();//only works in case if right password entered outside first
   }
 }
@@ -442,23 +463,65 @@ void gettingOutOfHome()
   isVerfied = true; // so user can access it from inside again
   isConnected = false;
 }
+void isVerfied_fingerPrints()
+{
+  uint8_t touchValue = digitalRead(touchPin); // Read the state of the touch sensor
+  
+  if (touchValue == HIGH)
+  {
+    // If the touch sensor is activated
+    Serial.println("Touch detected!"); // Print a message indicating touch detection
+    isDetected = true;
+  }
+  else
+  {
+     Serial.println("Touch NOT detected!");
+  }
+  delay(100); // Delay for stability and to prevent rapid triggering 
+}
+void touchSensor_mode()
+{
+  // Serial.println(isDetected);
+  if(isDetected)
+  {
+    insideServo.write(rightAngle);
+    digitalWrite(firstFloorLed, HIGH);
+  }
+}
+void inside_rightPassword_mode()
+{
+  insideServo.write(zeroAngle);
+  digitalWrite(greenLed, HIGH);
+  digitalWrite(redLed, LOW);
+  digitalWrite(buzzerPin, LOW);
+}
+void inside_wrongPassword_mode()
+{
+  insideServo.write(zeroAngle);
+  digitalWrite(greenLed, LOW);
+  digitalWrite(redLed, HIGH);
+  if(countWrongPasswords > 2)
+  {
+    buzzer_sirenSound();
+  }
+}
 void inside_rightPassword()
 {
   Serial.println("Congrataulations You are not a Thief ");
   isConnected = true;
-  // controlMenu();
+  inside_rightPassword_mode();
 }
 void inside_wrongPassword_firstTime()
 {
-  Serial.println("i am Wrong Password #1");
+  inside_wrongPassword_mode();
 }
 void inside_wrongPassword_secondTime()
 {
-  Serial.println("i am Wrong Password #2");
+  inside_wrongPassword_mode();
 }
 void inside_wrongPassword_thirdTime()
 {
-  Serial.println("i am Wrong Password #3");
+  inside_wrongPassword_mode();
   isLockedSystem = true;
 }
 void inside_wrongPassword_fourthTime()// for App only
