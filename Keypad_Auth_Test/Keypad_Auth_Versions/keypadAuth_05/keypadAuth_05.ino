@@ -34,16 +34,12 @@ bool isNotReset = true;//to stop switching between two modes
 bool isConnected = false;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
-//countMillis = millis();
 char controlPins[6] = {'1','2','3','4','5','6'};//this array stores keys that can control other aplliances
-char controlPin;
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 char get_key();
 void optionMenu(char);
 void enterPassword();
 bool passwordCheck();
-void callPolice();//instead of confirm function
-void generateNewPassword();//this function may be used in case user forget the real password and enters it through phone
 void resetPassword();
 void clearPassword();
 void noRepeatedPassword();
@@ -62,10 +58,8 @@ void inside_wrongPassword_firstTime();
 void inside_wrongPassword_secondTime();
 void inside_wrongPassword_thirdTime();
 void inside_wrongPassword_fourthTime();
-bool onTime();//count time from enterong home until enters correct password inside
 void controlMenu();
-// char storeControlPin();
-void control_front_door();
+void control_front_door();//outside door not house door
 void control_garage_door();
 void control_first_floor_light();
 void control_second_floor_light();
@@ -75,11 +69,10 @@ void control_air_conditoning();
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
   Serial.println("Enter a Password of 4 numeric digits please :");
- 
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
-void loop() {
-  // lockSystem();
+void loop()
+{
   outsideAuth();
 }
 ////////////////////////////////////FUNCTIONS IMPLEMENTATIONS////////////////////////////////////
@@ -96,8 +89,7 @@ void optionMenu(char symbol)
         resetPassword();//changes in correct password array
         break;
       case 'B':
-        // callPolice();
-        //generateNewPassword();
+        
         break;
       case 'C':
         clearPassword();
@@ -109,19 +101,15 @@ void optionMenu(char symbol)
         gettingOutOfHome();
         break;
       case '#':
-        controlMenu();
-        // storeControlPin();
+        
         break;
     }
 }
 
 void enterPassword()
 {
-  
   label:
-  // char key = mykeypad.getKey();
   char key = get_key();
-  controlPin = key;
   // Check if a key is pressed
   if (key) {
     // Print the key to the serial monitor
@@ -130,17 +118,13 @@ void enterPassword()
     {
       if(key == keys[rows][3])
       {
-        // Serial.println("Enter only numeric Values from 0 to 9");
         optionMenu(key);//goes to option menu to choose from it a key
    		  goto label;
-        // break;
       }
       else if(key == keys[3][2] || key == keys[3][0])
       {
-        // Serial.println("Enter only numeric Values from 0 to 9");
         optionMenu(key);//goes to option menu to choose from it a key
    		  goto label;
-        // break;
       }
     }
     
@@ -156,7 +140,6 @@ bool passwordCheck()
   {
       for(byte j = 0;j < passwordLength;j++)
   	  {
-        // Serial.print(enteredPassword[j]);
         if(passwordLength == 4)
         {
           if(enteredPassword[j] != outsideCorrectPassword[j])
@@ -188,7 +171,6 @@ bool passwordCheck()
     {
       Serial.println("Password is Correct");
       check = true;
-      // rightPassword();
       countWrongPasswords = 0;
     }
     countWrong = 0;//reset count to zero
@@ -267,14 +249,7 @@ void clearPassword()
   Serial.println("Password is Cleared");
   Serial.println("Enter the new Password :");
 }
-void generateNewPassword()
-{
 
-}
-void callPolice()
-{
-
-}
 void noRepeatedPassword()
 {
   char oldPassword[passwordLength];
@@ -361,51 +336,35 @@ void rightPassword()
   if(isNotReset)
   {
     delay(1000); //60 seconds delay so user can enter from home freely
-    // countMillis = millis();
-    // Serial.println(countMillis);
     insideAuth();//only works in case if right password entered outside first
-    // countMillis = millis();
-    //  previousTime = millis();
-    // previousTime = currentTime;
   }
-  // insideAuth();//only works in case if right password entered outside first
-  // lighting system code here 
-  //buzzer code here
-  //servo code to open door code here 
 }
 void wrongPassword_firstTime()
 {
   Serial.println("i am Wrong Password #1");
-  // lighting system code here 
-  //buzzer code here
 }
 void wrongPassword_secondTime()
 {
   Serial.println("i am Wrong Password #2");
-  // lighting system code here 
-  //buzzer code here
-
 }
 void wrongPassword_thirdTime()
 {
-  // Serial.println("i am Wrong Password #3");
   Serial.println("The only way to unlock is your phone");
-  // lighting system code here 
-  //buzzer code here
   isLockedSystem = true;
 }
 void wrongPassword_fourthTime()//App Function not Keypad
 {
   Serial.println("i am Wrong Password #4");//this time on App not Keypad and we will make it open maybe 
-  // lighting system code here 
-  //buzzer code here
-  //iot code here to control from App
 }
 void lockSystem()
 {
-if(!isLockedSystem)
+if(!isLockedSystem && !isConnected)
   {
     enterPassword();
+  }
+  else if(isConnected)
+  {
+    controlMenu();
   }
 }
 void outsideAuth()
@@ -414,105 +373,81 @@ void outsideAuth()
 }
 void insideAuth()
 {
-  // Serial.println(isVerfied);
   if(isVerfied)
   {
-    // clearPassword();
     Serial.println("Please Enter inside Home Password to verify : ");
     passwordLength = 6;
     enterPassword();
     isVerfied = false;//to enter password one time after verfication
   }
-  // Serial.println(isVerfied);
 }
 void gettingOutOfHome()
 {
   Serial.println("System now is locked from inside and user got out !!");
   passwordLength = 4;
   isVerfied = true; // so user can access it from inside again
+  isConnected = false;
 }
 void inside_rightPassword()
 {
-  // Serial.println(countMillis);
-  // if(onTime())
-  // {
-    Serial.println("Congrataulations You are not a Thief ");
-  // }
+  Serial.println("Congrataulations You are not a Thief ");
   isConnected = true;
+  // controlMenu();
 }
 void inside_wrongPassword_firstTime()
 {
   Serial.println("i am Wrong Password #1");
-   // lighting system code here 
-  //buzzer code here
 }
 void inside_wrongPassword_secondTime()
 {
   Serial.println("i am Wrong Password #2");
-   // lighting system code here 
-  //buzzer code here
 }
 void inside_wrongPassword_thirdTime()
 {
   Serial.println("i am Wrong Password #3");
-   // lighting system code here 
-  //buzzer code here
+  isLockedSystem = true;
 }
 void inside_wrongPassword_fourthTime()// for App only
 {
-   // lighting system code here 
-  //buzzer code here
-}
-bool onTime()
-{
-  // Serial.println(currentTime);
-  // Serial.println(previousTime);
-  currentTime = millis();
-  if(currentTime - previousTime > 1000)
-  {
-    Serial.println("Timeout please wait 10 seconds to restart System Again");
-    return false;
-  }
-  else 
-  {
-    return true;
-  }
-}
-char storeControlPin()
-{
 
 }
+
 void controlMenu()
 {
-  enterPassword();
-  Serial.println(controlPin);
-  if(isConnected)
+  char controlKey = get_key();
+  if(controlKey)
   {
-    switch(controlPin)
+    Serial.println(controlKey);
+    // Serial.println("Hello Sir , Now You can control THE House Panel From Here !!");
+    switch(controlKey)
     {
-      case'1':
-      control_front_door();//close or open doors
-      break;
-      case'2':
-      control_first_floor_light();//turn on or off light 
-      break;
-      case'3':
-      control_second_floor_light();//turn on or off light 
-      break;
-      case'4':
-      control_garage_door();//turn on or off light 
-      break;
-      case'5':
-      control_fire_alarm();//close system in case there is false alarm
-      break;
-      case'6':
-      control_air_conditoning();//turn on or off 
-      break;
-      default:
-      Serial.println("Enter a number to control something from 1 >> 6");
+        case'1':
+        control_front_door();//close or open doors
+        break;
+        case'2':
+        control_first_floor_light();//turn on or off light 
+        break;
+        case'3':
+        control_second_floor_light();//turn on or off light 
+        break;
+        case'4':
+        control_garage_door();//turn on or off light 
+        break;
+        case'5':
+        control_fire_alarm();//close system in case there is false alarm
+        break;
+        case'6':
+        control_air_conditoning();//turn on or off 
+        break;
+        case'*':
+        case'A':
+        optionMenu(controlKey);
+        break;
+        default:
+        Serial.println("Enter a number to control something from 1 >> 6");
     }
+
   }
-  i = 0;
 }
 
 void control_front_door()
