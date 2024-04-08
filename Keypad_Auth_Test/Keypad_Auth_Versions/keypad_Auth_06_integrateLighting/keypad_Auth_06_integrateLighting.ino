@@ -1,5 +1,14 @@
-#include <Keypad.h> //include header file
+#include <Keypad.h> //include Keypad Library
+#include <Servo.h> //include Servo Library
 
+#define servoPin 10 // Change this to the pin connected to your servo motor
+Servo myServo; // Create a servo object
+byte rightAngle = 90;
+byte zeroAngle = 0;
+//led for detection
+#define redLed 11
+#define greenLed 12
+#define buzzerPin 13
 // Define the rows and columns of the keypad 4x4
 const byte ROWS = 4; // Four rows
 const byte COLS = 4; // Four columns
@@ -32,9 +41,6 @@ bool isLockedSystem = false;//to lock system if user entered it more than 3 time
 bool isVerfied = true;//to enter inside password one time after verifcation
 bool isNotReset = true;//to stop switching between two modes
 bool isConnected = false;
-unsigned long currentTime = 0;
-unsigned long previousTime = 0;
-char controlPins[6] = {'1','2','3','4','5','6'};//this array stores keys that can control other aplliances
 //////////////////////////////GLOBAL FUNCTIONS/////////////////////////////////////
 char get_key();
 void optionMenu(char);
@@ -65,10 +71,20 @@ void control_first_floor_light();
 void control_second_floor_light();
 void control_fire_alarm();
 void control_air_conditoning();
+///////////////////////////LED FUNCTIONS///////////////////////////////////////////
+void outside_rightPassword_mode();
+void outside_wrongPassword_mode();
+void buzzer_sirenSound();
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
   Serial.println("Enter a Password of 4 numeric digits please :");
+  //init servo
+  myServo.attach(servoPin);
+  //init leds and buzzers
+  pinMode(redLed , OUTPUT);
+  pinMode(greenLed , OUTPUT);
+  pinMode(buzzerPin , OUTPUT);
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop()
@@ -330,25 +346,63 @@ void WrongPasswords(byte w)
     }
   }
 }
+void buzzer_sirenSound()
+{
+    // Generate the siren sound
+    for (int i = 200; i <= 1000; i += 100)
+    {
+      tone(buzzerPin, i); // Generate tone at frequency i Hz
+      delay(100); // Wait for a short duration
+    }
+
+    // Reverse the siren sound
+    for (int i = 1000; i >= 200; i -= 100)
+    {
+      tone(buzzerPin, i); // Generate tone at frequency i Hz
+      delay(100); // Wait for a short duration
+    }
+}
+void outside_rightPassword_mode()
+{
+  myServo.write(rightAngle);
+  digitalWrite(greenLed, HIGH);
+  digitalWrite(redLed, LOW);
+  digitalWrite(buzzerPin, LOW);
+}
+void outside_wrongPassword_mode()
+{
+  myServo.write(zeroAngle);
+  digitalWrite(greenLed, LOW);
+  digitalWrite(redLed, HIGH);
+  if(countWrongPasswords > 2)
+  {
+    buzzer_sirenSound();
+  }
+  
+}
 void rightPassword()
 {
-  Serial.println("i am Right Password");
   if(isNotReset)
   {
+    Serial.println("i am Right Password");
     delay(1000); //60 seconds delay so user can enter from home freely
+    outside_rightPassword_mode();
     insideAuth();//only works in case if right password entered outside first
   }
 }
 void wrongPassword_firstTime()
 {
+  outside_wrongPassword_mode();
   Serial.println("i am Wrong Password #1");
 }
 void wrongPassword_secondTime()
 {
+  outside_wrongPassword_mode();
   Serial.println("i am Wrong Password #2");
 }
 void wrongPassword_thirdTime()
 {
+  outside_wrongPassword_mode();
   Serial.println("The only way to unlock is your phone");
   isLockedSystem = true;
 }
