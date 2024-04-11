@@ -1,5 +1,7 @@
+#include <String.h>
 #include <Keypad.h> //include Keypad Library
 #include <Servo.h> //include Servo Library
+#include <LiquidCrystal.h> // Include the LiquidCrystal library
 //pwm pins (3,5,6,9,10,11) only
 #define outsideServoPin 20 // Change this to the pin connected to your servo motor
 #define insideServoPin 21 // Change this to the pin connected to your servo motor
@@ -14,6 +16,9 @@ byte zeroAngle = 180;
 #define firstFloorLed 15//A1
 #define touchPin 14 //A0 digital to analog
 #define irPin 10 //irSensorPin 
+// Define the pins for the LCD
+const int rs = 54, en = 55, d4 = 56, d5 = 57, d6 = 58, d7 = 59;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7); // Create an LCD object
 // Define the rows and columns of the keypad 4x4
 const byte ROWS = 4; // Four rows
 const byte COLS = 4; // Four columns
@@ -42,6 +47,7 @@ char outsideCorrectPassword[4] = {'1','2','3','4'};// store correct password in 
 char insideCorrectPassword[6] = {'1','4','7','8','5','2'};// store correct password in an array
 byte countWrong = 0; // counts wrong digits entered
 byte countWrongPasswords = 0;//count wrong attempts
+static byte columnPosition = 0;
 bool isLockedSystem = false;//to lock system if user entered it more than 3 times wrong
 bool isVerfied = true;//to enter inside password one time after verifcation
 bool isNotReset = true;//to stop switching between two modes
@@ -89,13 +95,17 @@ void inside_rightPassword_mode();
 void inside_wrongPassword_mode();
 bool read_irSensor_value();
 void ready_to_pass();
+void print_on_lcd(const char * message);
+void reset_security_system();
+void print_characters(const char ch);
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
-  Serial.println("Enter Password");
+  print_on_lcd("Welcome Home Sir"); // Print a Hello message on the LCD
+  print_on_lcd("Enter Password:");
   //init servo
-  outsideServo.attach(outsideServoPin);
-  insideServo.attach(insideServoPin);
+  // outsideServo.attach(outsideServoPin);
+  // insideServo.attach(insideServoPin);
   //init leds and buzzers
   pinMode(redLed , OUTPUT);
   pinMode(greenLed , OUTPUT);
@@ -105,8 +115,9 @@ void setup() {
   pinMode(irPin,INPUT);//Read state value (low , high)
   insideServo.write(zeroAngle);
   outsideServo.write(zeroAngle);
-  //  Serial.println(outsideServo.read());
-  // Serial.println(insideServo.read());
+  //  print_on_lcd(outsideServo.read());
+  // print_on_lcd(insideServo.read());
+ lcd.begin(16, 2); // Initialize the LCD with 16 columns and 2 rows
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop()
@@ -151,7 +162,7 @@ void enterPassword()
   // Check if a key is pressed
   if (key) {
     // Print the key to the serial monitor
-    Serial.println(key);
+    print_characters(key);
     for(byte rows = 0;rows < ROWS;rows++)
     {
       if(key == keys[rows][3])
@@ -195,18 +206,17 @@ void passwordCheck()
           }
         }
       }
-    Serial.println();
     i = 0;
     bool check = false; // return final value
     if(countWrong)
     {
-      Serial.println("Password is Wrong");
+      // print_on_lcd("Password is Wrong");
       countWrongPasswords++;
     }
         
     else
     {
-      Serial.println("Password is Correct");
+      // print_on_lcd("Password is Correct");
       countWrongPasswords = 0;
     }
     countWrong = 0;//reset count to zero
@@ -218,7 +228,7 @@ void passwordCheck()
 
 void resetPassword()
 {
-  Serial.println("Enter old password");
+  print_on_lcd("Enter old PassKey");
   i = 0;
   isNotReset = false;
   while(i < passwordLength)
@@ -229,7 +239,7 @@ void resetPassword()
 if(countWrongPasswords == 0)
   {
     i = 0;
-    Serial.println("Enter new password");
+    print_on_lcd("Enter new PassKey");
     while(i < passwordLength)
     {
       char key = get_key();
@@ -237,7 +247,7 @@ if(countWrongPasswords == 0)
       if (key) 
       {
         // Print the key to the serial monitor
-        Serial.println(key);
+        print_characters(key);
         if(passwordLength == 4)
         {
           outsideCorrectPassword[i] = key;
@@ -254,19 +264,18 @@ if(countWrongPasswords == 0)
     
   }
   i = 0;
-  Serial.print("Your New Password is : ");
+  print_on_lcd("New PassKey is :");
   for(byte p = 0;p < passwordLength;p++)
   {
     if(passwordLength == 4)
         {
-          Serial.print(outsideCorrectPassword[p]);
+          print_characters(outsideCorrectPassword[p]);
         }
         else if(passwordLength == 6)
         {
-          Serial.print(insideCorrectPassword[p]);
+          print_characters(insideCorrectPassword[p]);
         } 
   }
-  Serial.println();
   noRepeatedPassword();
   isNotReset = true;
 }
@@ -282,8 +291,8 @@ void clearPassword()
      Serial.print(enteredPassword[p]);
   }
   i = 0;
-  Serial.println("Password is Cleared");
-  Serial.println("Enter the new Password :");
+  print_on_lcd("Password is Clear");
+  print_on_lcd("Enter Password :");
 }
 
 void noRepeatedPassword()
@@ -310,12 +319,12 @@ void noRepeatedPassword()
   } 
   if(isIdentical)
   {
-    Serial.println("Enter different Password from the old one");
+    print_on_lcd("different PassKey");
     resetPassword();
   }
   else
   {
-    Serial.println("Not Identical");
+    print_on_lcd("Not Identical");
   }
 }
 void WrongPasswords(byte w)
@@ -389,6 +398,7 @@ void outside_rightPassword_mode()
   digitalWrite(redLed, LOW);
   // digitalWrite(buzzerPin, LOW);
   noTone(buzzerPin);
+  print_on_lcd("FingerPrints");
   while(!isDetected)
   {
     isVerfied_fingerPrints();
@@ -409,7 +419,7 @@ void rightPassword()
 {
   if(isNotReset)
   {
-    Serial.println("Right Password");
+    print_on_lcd("Right Password");
     outside_rightPassword_mode();
     delay(1000); //60 seconds delay so user can enter from home freely
     insideAuth();//only works in case if right password entered outside first
@@ -418,22 +428,23 @@ void rightPassword()
 void wrongPassword_firstTime()
 {
   outside_wrongPassword_mode();
-  Serial.println("Wrong Password #1");
+  print_on_lcd("Wrong Password#1");
 }
 void wrongPassword_secondTime()
 {
   outside_wrongPassword_mode();
-  Serial.println("Wrong Password #2");
+  print_on_lcd("Wrong Password#2");
 }
 void wrongPassword_thirdTime()
 {
   outside_wrongPassword_mode();
-  Serial.println("unlock from phone");
+  print_on_lcd("Wrong Password#3");
+  print_on_lcd("unlock ON Phone");
   isLockedSystem = true;
 }
 void wrongPassword_fourthTime()//App Function not Keypad
 {
-  Serial.println("Wrong Password #4");//this time on App not Keypad and we will make it open maybe 
+  print_on_lcd("Wrong Password #4");//this time on App not Keypad and we will make it open maybe 
 }
 void lockSystem()
 {
@@ -455,7 +466,7 @@ void insideAuth()
 {
   if(isVerfied)
   {
-    Serial.println("Enter Password : ");
+    print_on_lcd("Enter Password :");
     passwordLength = 6;
     enterPassword();
     isVerfied = false;//to enter password one time after verfication
@@ -463,10 +474,11 @@ void insideAuth()
 }
 void gettingOutOfHome()
 {
-  Serial.println("System now is locked from inside and user got out !!");
+  print_on_lcd("System is locked");
   passwordLength = 4;
   isVerfied = true; // so user can access it from inside again
   isConnected = false;
+  reset_security_system();
 }
 void isVerfied_fingerPrints()
 {
@@ -475,18 +487,17 @@ void isVerfied_fingerPrints()
   if (touchValue == HIGH)
   {
     // If the touch sensor is activated
-    Serial.println("Touch detected!"); // Print a message indicating touch detection
+    print_on_lcd("Touch detected!"); // Print a message indicating touch detection
     isDetected = true;
   }
   else
   {
-    //  Serial.println("Touch NOT detected!");
+    //  print_on_lcd("Touch NOT detected!");
   }
   delay(100); // Delay for stability and to prevent rapid triggering 
 }
 void touchSensor_mode()
 {
-  // Serial.println(isDetected);
   if(isDetected)
   {
     insideServo.write(rightAngle);
@@ -512,23 +523,23 @@ void inside_wrongPassword_mode()
 }
 void inside_rightPassword()
 {
-  Serial.println("Congrataulations You are not a Thief ");
+  print_on_lcd("Congrataulations");
   isConnected = true;
   inside_rightPassword_mode();
 }
 void inside_wrongPassword_firstTime()
 {
-  Serial.println("Wrong Password #1");
+  print_on_lcd("Wrong Password #1");
   inside_wrongPassword_mode();
 }
 void inside_wrongPassword_secondTime()
 {
-  Serial.println("Wrong Password #2");
+  print_on_lcd("Wrong Password #2");
   inside_wrongPassword_mode();
 }
 void inside_wrongPassword_thirdTime()
 {
-  Serial.println("Wrong Password #3");
+  print_on_lcd("Wrong Password #3");
   inside_wrongPassword_mode();
   isLockedSystem = true;
 }
@@ -542,8 +553,8 @@ void controlMenu()
   char controlKey = get_key();
   if(controlKey)
   {
-    Serial.println(controlKey);
-    // Serial.println("Hello Sir , Now You can control THE House Panel From Here !!");
+    print_characters(controlKey);
+    print_on_lcd("Control Panel");
     switch(controlKey)
     {
         case'1':
@@ -569,7 +580,7 @@ void controlMenu()
         optionMenu(controlKey);
         break;
         default:
-        Serial.println("Enter a number to control something from 1 >> 6");
+        print_on_lcd("Numbers 1 >> 6");
     }
 
   }
@@ -577,27 +588,27 @@ void controlMenu()
 
 void control_front_door()
 {
-  Serial.println("control front Door Here");
+  print_on_lcd("front Door");
 }
 void control_first_floor_light()
 {
-  Serial.println("control first_floor_light Here");
+  print_on_lcd("first_floor_light");
 }
 void control_second_floor_light()
 {
-  Serial.println("control second_floor_light Here");
+  print_on_lcd("second_floor_light");
 }
 void control_garage_door()
 {
-  Serial.println("control garage_door Here");
+  print_on_lcd("garage_door");
 }
 void control_fire_alarm()
 {
-  Serial.println("control fire_alarm Here");
+  print_on_lcd("fire_alarm");
 }
 void control_air_conditoning()
 {
-  Serial.println("control air_conditoning Here");
+  print_on_lcd("air_conditoning");
 }
 bool read_irSensor_value()
 {
@@ -610,13 +621,44 @@ void ready_to_pass()
   isIrSensorDisabled = read_irSensor_value();
   if(isOutsidePasswordEntered == false && isIrSensorDisabled == false)//user didn't enter password and passed
   {
+    print_on_lcd("Burgler Alert!!");
     buzzer_sirenSound();
+    
   }
   else if(isOutsidePasswordEntered == true && isIrSensorDisabled == false)
   {
-    if(countWrongPasswords)
+    if(countWrongPasswords && passwordLength == 4)//means only outside 
     {
+      print_on_lcd("Burgler Alert!!");
       buzzer_sirenSound();
     }
   }
+}
+void reset_security_system()
+{
+  digitalWrite(greenLed,LOW);
+  digitalWrite(redLed,LOW);
+  isOutsidePasswordEntered = false;
+  isDetected = false;
+  print_on_lcd("Welcome Home Sir"); // Print a Hello message on the LCD
+  print_on_lcd("Enter Password");
+}
+void print_characters(const char ch)
+{
+  Serial.println(ch);
+  lcd.setCursor(columnPosition, 1);
+  lcd.cursor();
+  lcd.print(ch);
+  columnPosition++;//increase columnPosition to shift left
+  delay(500);//stability
+}
+void print_on_lcd(const char * message)
+{ 
+  Serial.println(message);
+  lcd.clear();
+  lcd.home();
+  lcd.noCursor();
+  lcd.print(message);
+  columnPosition = 0;//reset it to zero so it can count again
+  delay(1000);//for stability
 }
