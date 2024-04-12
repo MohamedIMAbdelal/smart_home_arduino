@@ -2,22 +2,23 @@
 #include <Keypad.h> //include Keypad Library
 #include <Servo.h> //include Servo Library
 #include <LiquidCrystal.h> // Include the LiquidCrystal library
+//ARDUINO MEGA 
 //pwm pins (3,5,6,9,10,11) only
 #define outsideServoPin 20 // Change this to the pin connected to your servo motor
-#define insideServoPin 21 // Change this to the pin connected to your servo motor
+#define homeDoorServoPin 9 // Change this to the pin connected to your servo motor
 Servo outsideServo; // Create a servo object for outside gate
-Servo insideServo; //create a servo object for inside front door
+Servo homeDoorServo; //create a servo object for inside front door
 byte rightAngle = 90;
 byte zeroAngle = 180;
 //led for detection
-#define redLed 11
-#define greenLed 12
+#define redLed 25
+#define greenLed 23
 #define buzzerPin 13
-#define firstFloorLed 15//A1
-#define touchPin 14 //A0 digital to analog
-#define irPin 10 //irSensorPin 
+#define firstFloorLed 15
+#define touchPin 24 //A0 digital to analog
+#define irPin 22 //irSensorPin 
 // Define the pins for the LCD
-const int rs = 54, en = 55, d4 = 56, d5 = 57, d6 = 58, d7 = 59;
+const int rs = 53, en = 51, d4 = 49, d5 = 47, d6 = 45, d7 = 43;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7); // Create an LCD object
 // Define the rows and columns of the keypad 4x4
 const byte ROWS = 4; // Four rows
@@ -32,10 +33,10 @@ char keys[ROWS][COLS] = {
 };
 
 // Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.(digital pins)
-byte rowPins[ROWS] = {9, 8, 7, 6}; // Rows 0 to 3
+byte rowPins[ROWS] = {27, 29, 31, 33}; // Rows 0 to 3
 
 // Connect keypad COL0, COL1 and COL2 to these Arduino pins.(digital pins)
-byte colPins[COLS] = {5, 4, 3, 2}; // Columns 0 to 3
+byte colPins[COLS] = {35, 37, 39, 41}; // Columns 0 to 3
 
 // Create the Keypad object
 Keypad mykeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);//takes function that takes keys as a map
@@ -98,6 +99,7 @@ void ready_to_pass();
 void print_on_lcd(const char * message);
 void reset_security_system();
 void print_characters(const char ch);
+void control_servo_speed(Servo servoName , uint8_t firstAngle , uint8_t secondAngle);
 //////////////////////////////////SETUP FUNCTION///////////////////////////////////
 void setup() {
   Serial.begin(9600);//initate bandwidth of data to 9600 with serial monitor
@@ -105,7 +107,7 @@ void setup() {
   print_on_lcd("Enter Password:");
   //init servo
   // outsideServo.attach(outsideServoPin);
-  // insideServo.attach(insideServoPin);
+  homeDoorServo.attach(homeDoorServoPin);
   //init leds and buzzers
   pinMode(redLed , OUTPUT);
   pinMode(greenLed , OUTPUT);
@@ -113,11 +115,9 @@ void setup() {
   pinMode(firstFloorLed , OUTPUT);
   pinMode(touchPin , INPUT);
   pinMode(irPin,INPUT);//Read state value (low , high)
-  insideServo.write(zeroAngle);
-  outsideServo.write(zeroAngle);
-  //  print_on_lcd(outsideServo.read());
-  // print_on_lcd(insideServo.read());
- lcd.begin(16, 2); // Initialize the LCD with 16 columns and 2 rows
+  homeDoorServo.write(zeroAngle);
+  // outsideServo.write(zeroAngle);
+  lcd.begin(16, 2); // Initialize the LCD with 16 columns and 2 rows
 }
 ////////////////////////////LOOP FUNCTION///////////////////////////////////////////
 void loop()
@@ -264,7 +264,7 @@ if(countWrongPasswords == 0)
     
   }
   i = 0;
-  print_on_lcd("New PassKey is :");
+  print_on_lcd("New PassKey :");
   for(byte p = 0;p < passwordLength;p++)
   {
     if(passwordLength == 4)
@@ -500,20 +500,20 @@ void touchSensor_mode()
 {
   if(isDetected)
   {
-    insideServo.write(rightAngle);
+    control_servo_speed(homeDoorServo, zeroAngle, rightAngle);
     digitalWrite(firstFloorLed, HIGH);
   }
 }
 void inside_rightPassword_mode()
 {
-  insideServo.write(zeroAngle);
+  control_servo_speed(homeDoorServo, rightAngle, zeroAngle);
   digitalWrite(greenLed, HIGH);
   digitalWrite(redLed, LOW);
   digitalWrite(buzzerPin, LOW);
 }
 void inside_wrongPassword_mode()
 {
-  insideServo.write(zeroAngle);
+  homeDoorServo.write(zeroAngle);
   digitalWrite(greenLed, LOW);
   digitalWrite(redLed, HIGH);
   if(countWrongPasswords > 2)
@@ -551,10 +551,10 @@ void inside_wrongPassword_fourthTime()// for App only
 void controlMenu()
 {
   char controlKey = get_key();
+  // print_on_lcd("Control Panel");
   if(controlKey)
   {
     print_characters(controlKey);
-    print_on_lcd("Control Panel");
     switch(controlKey)
     {
         case'1':
@@ -661,4 +661,25 @@ void print_on_lcd(const char * message)
   lcd.print(message);
   columnPosition = 0;//reset it to zero so it can count again
   delay(1000);//for stability
+}
+void control_servo_speed(Servo servoName , uint8_t firstAngle , uint8_t secondAngle)
+{
+  const uint8_t rotationSpeed = 20;
+  if(firstAngle < secondAngle)
+  {
+      for (int angle = firstAngle; angle <= secondAngle; angle++)
+      {
+        servoName.write(angle); // Set the servo position
+        delay(rotationSpeed); // Delay for smooth movement, adjust as needed
+      }
+  }
+  
+  else if(firstAngle > secondAngle)
+  {
+    for (int angle = firstAngle; angle >= secondAngle; angle--)
+      {
+        servoName.write(angle); // Set the servo position
+        delay(rotationSpeed); // Delay for smooth movement, adjust as needed
+      }
+  }
 }
