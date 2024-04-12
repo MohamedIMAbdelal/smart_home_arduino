@@ -652,13 +652,26 @@ void print_characters(const char ch)
   columnPosition++;//increase columnPosition to shift left
   delay(500);//stability
 }
+// Custom function to get the length of a const char* array
+uint8_t getLength(const char* str) {
+    uint8_t length = 0;
+    while (*str++) {
+        length++;
+    }
+    return length;
+}
 void print_on_lcd(const char * message)
 { 
+  // uint8_t msgLength = getLength(message);
   Serial.println(message);
   lcd.clear();
   lcd.home();
   lcd.noCursor();
   lcd.print(message);
+  // for(uint8_t i = 0;i < msgLength;i++)
+  // {
+  //  lcd.print(message[i]);
+  // }
   columnPosition = 0;//reset it to zero so it can count again
   delay(1000);//for stability
 }
