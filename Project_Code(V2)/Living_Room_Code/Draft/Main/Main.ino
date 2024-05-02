@@ -17,8 +17,8 @@ uint16_t flameThreshold = 500;
 
 //define led pin
 #define pinLed 49
-uint8_t ledON = 1;//indicator for led is on
-uint8_t ledOFF = 0;//indicator for led is off
+uint8_t ON = 1;//indicator for led is on
+uint8_t OFF = 0;//indicator for led is off
 #define pirPin 2 // Define the digital pin connected to the PIR sensor
 
 #define DHTPIN 3          // Pin to which the DHT11 sensor is connected
@@ -32,7 +32,10 @@ uint8_t humidityThreshold = 30;//random val
 uint8_t leftDirection = 1;
 uint8_t rightDirection = 0;
 
-#define TOUCH_SENSOR_PIN 2 // Define the digital pin connected to the touch sensor
+#define TOUCH_SENSOR_PIN 22 // Define the digital pin connected to the touch sensor
+bool isTouched = false;//indicate if someone touched the sensor 
+bool isInside = false;//indicate if someone passed infront of ir sensor 
+#define irPin 2
 ////////////////////////////////// FUNCTIONS DECLRATIONS HERE ///////////////////////////////////////////
 int read_flameSensor();//read flame value 
 bool isFlameActivated();//if there is fire return true
@@ -44,6 +47,7 @@ float read_temperature();//with fan
 float read_humidity();// not used here
 void control_fan(uint8_t);// fan 
 bool isTouchSensorActivated();//to enter home and activate leds
+uint8_t read_irSensor();
 void activate_system();
 //////////////////////////////// BOOLEAN VARAIBLES HERE //////////////////////////////////////////////
 
@@ -67,6 +71,8 @@ pinMode(pinLed, OUTPUT);
   pinMode(motorPin_02 , OUTPUT);
 ////////////////// TOUCH SENSOR ///////////////////////
   pinMode(TOUCH_SENSOR_PIN, INPUT); // Set the touch sensor pin as input
+///////////////////////IR SENSOR ///////////////////////
+  pinMode(irPin,INPUT);
 }
 
 void loop() {
@@ -170,18 +176,32 @@ void activate_system()
   activate_buzzer();//flame
   // if(isMotionDetected())//led
   // {
-  //   control_led(ledON);
+  //   control_led(ON);
   //   delay(1000);
   // }
   // else
   // {
-  //   control_led(ledOFF);
+  //   control_led(OFF);
   // }
 
   // control_fan(leftDirection);//dht 11
-  if(isTouchSensorActivated())
+  if(isTouchSensorActivated() && read_irSensor() == false && isInside == false)//coming from outside to inside
   {
-    control_led(ledON);
+    control_led(ON);
+    isInside  = true;
+    isTouched = true;
+  }
+  else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == true)//getting out from inside to outside
+  {
+    control_led(OFF);
+    isInside  = false;
+  }
+  else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == false)
+  {
+    buzzer_sirenSound(ON);
+    delay(1000);
+    buzzer_sirenSound(OFF);
+    delay(1000);
   }
 }
 /////////////////////////////// DHT 11 SENSOR ///////////////////////////
@@ -267,4 +287,11 @@ bool isTouchSensorActivated()
   }
   delay(100); // Delay for stability and to prevent rapid triggering
   return touchValue;
+}
+/////////////////////////// IR SENSOR ////////////////////////////
+uint8_t read_irSensor()
+{
+  uint8_t irValue = digitalRead(irPin);
+  delay(100);
+  return irValue;
 }
