@@ -1,5 +1,6 @@
-#ifndef LIVING_ROOM_H
-#define LIVING_ROOM_H
+#ifndef KITCHEN_H
+#define KITCHEN_H
+
 //////////////////////////////////////NOTES//////////////////////////////////////////////////////////////
 // WE ONLY USE THIS TYPE OF WRITING IN VARAIBLES ===> flameThreshold
 // AND THIS TYPE IN FUNCTION NAMES FOR EASY USE LASTER ===> read_flameSensor();
@@ -7,41 +8,38 @@
 /////////////////////////////////////// PIN DIAGRAM FOR ARDUINO /////////////////////////
 #include<Arduino.h>
 #include<stdint.h>
-#include <DHT.h>
 
 /////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
 // Define the pins for the FLAME sensor
 #define flamePin A0  // Define the analog pin for flame sensor
 #define buzzerPin 48  // Define the digital pin for the buzzer
 #define pinLed 49
-// #define TOUCH_SENSOR_PIN 22 // Define the digital pin connected to the touch sensor
-#define irPin 2
 #define ON 1
 #define OFF 0
-
-// #define DHTPIN 3          // Pin to which the DHT11 sensor is connected
-// #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
-
-//random val
-class Living_Room
+#define MQ2_SENSOR_PIN A5
+#define pirPin 2 // Define the digital pin connected to the PIR sensor
+class Kitchen
 {
   private:
-    uint16_t flameThreshold = 500;
+  uint16_t flameThreshold = 500;
     int read_flameSensor();//read flame value 
     bool isFlameActivated();//if there is fire return true
     void activate_buzzer();// turn on if there is fire 
     void buzzer_sirenSound(uint8_t switchControl);//sound siren
-    // bool isTouchSensorActivated();//to enter home and activate leds
-    uint8_t read_irSensor();
     void control_led(uint8_t switchControl);
-    // float read_temperature();//with fan
-    // float read_humidity();// not used here
-    // uint8_t tempThreshold = 25;//25 C
-    // uint8_t humidityThreshold = 30;
+    bool read_smokeValue();//return is smoke detected ?
+    bool isMotionDetected();
   public:
-  Living_Room();
-  void loop();
+  Kitchen();
   void setup();
+  void loop();
 };
+
+
+
+
+
+
+
 
 #endif

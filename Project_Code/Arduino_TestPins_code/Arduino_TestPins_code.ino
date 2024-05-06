@@ -1,6 +1,6 @@
 
 #define pinNumber 69
-#define blinkPin 54
+#define blinkPin 13
 void setup() {
   // put your setup code here, to run once:
   for(byte pin = 0;pin <= pinNumber;pin++)

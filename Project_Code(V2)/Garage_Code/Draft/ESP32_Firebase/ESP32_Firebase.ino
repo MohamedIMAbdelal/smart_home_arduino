@@ -1,25 +1,33 @@
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+
+/* 1. Define the WiFi credentials */
+#define WIFI_SSID "Redmi Note 10 Pro"
+#define WIFI_PASSWORD "12345678"
+
+/* 2. Define the API Key */
+#define API_KEY "AIzaSyClbU_V4laMq0qZ1nyOJuuQTD0EawNX6aI"
+
+/* 3. Define the RTDB URL */
+#define DATABASE_URL "https://smart-home-18837-default-rtdb.firebaseio.com/" 
+
+/* 4. Define the user Email and password that alreadey registerd or added in your project */
+#define USER_EMAIL "sazokamine@gmail.com"
+#define USER_PASSWORD "123456"
+
+// Define Firebase Data object
+FirebaseData fbdo;
+
+FirebaseAuth auth;
+FirebaseConfig config;
+
+unsigned long sendDataPrevMillis = 0;
+
 //////////////////////////////////////NOTES//////////////////////////////////////////////////////////////
 // WE ONLY USE THIS TYPE OF WRITING IN VARAIBLES ===> flameThreshold
 // AND THIS TYPE IN FUNCTION NAMES FOR EASY USE LASTER ===> read_flameSensor();
 // EXCEPTION FOR THIS BOOL RETURN FUNCTION NAMES  ===> isFlameActivated();
 /////////////////////////////////////// PIN DIAGRAM FOR ARDUINO /////////////////////////
-#include <WiFi.h>
-#include <Firebase_ESP_Client.h>
-#include <ESP32Servo.h>
-#define WIFI_SSID "Redmi Note 10 Pro"
-#define WIFI_PASSWORD "12345678"
-#define API_KEY "AIzaSyClbU_V4laMq0qZ1nyOJuuQTD0EawNX6aI"
-#define DATABASE_URL "https://smart-home-18837-default-rtdb.firebaseio.com/"
-#define USER_EMAIL "sazokamine@gmail.com"
-#define USER_PASSWORD "123456"
-
-FirebaseData fbdo;
-FirebaseAuth auth;
-FirebaseConfig config;
-
-unsigned long prevMillis = 0;
-const long interval = 1000; // Interval to check Firebase for updates (milliseconds)
-
 
 //////////////////////////////////// INCLUDE LIBRARY HERE //////////////////////////////////////////////////////
 #include <Servo.h>
@@ -29,66 +37,32 @@ const long interval = 1000; // Interval to check Firebase for updates (milliseco
 #define buzzerPin 48  // Define the digital pin for the buzzer
 uint16_t flameThreshold = 500;
 // Define the pins for the ULTRASONIC sensor
-#define trigPin  13 // Trigger pin
-#define echoPin  12 // Echo pin
+#define trigPin  23 // Trigger pin
+#define echoPin  22 // Echo pin
 // Variables to store the duration and distance
 long duration;
 int distance;
-uint8_t ultrasonicThreshold = 70;
+byte ultrasonicThreshold = 70;
 //create servo object
 Servo garageServo;
 // Define the pin for the servo signal
-#define servoPin 14
-uint8_t zeroAngle = 0;
-uint8_t rightAngle = 90;
+#define servoPin 13
+byte zeroAngle = 0;
+byte rightAngle = 90;
 //define led pin
-#define pinLed 27
-#define ON 1
-#define OFF 0
+#define pinLed 49
 ////////////////////////////////// FUNCTIONS DECLRATIONS HERE ///////////////////////////////////////////
 int read_flameSensor();//read flame value 
 bool isFlameActivated();//if there is fire return true
 void activate_buzzer();// turn on if there is fire 
 void control_garage_door();//open door 
-void control_led(uint8_t);//turn on/off led
+void control_led(byte);//turn on/off led
 int read_ultrasonicDistance();
 void activate_system();
-///////////////////FIREBASE FUNCTIONS////////////////
-void update_ultrasonic_onFirebase(bool);
-void update_led_onFirebase(bool);
-void update_servo_onFirebase(uint8_t);
-// void get_ultrasonic_fromFirebase();
-void get_led_fromFirebase();
-void get_servo_fromFirebase();
-
 //////////////////////////////// BOOLEAN VARAIBLES HERE //////////////////////////////////////////////
 
 void setup()
 {
-  Serial.begin(115200);
-  // Connect to WiFi
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Connecting to Wi-Fi");
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(300);
-  }
-  Serial.println("\nConnected to Wi-Fi");
-
-  // Initialize Firebase
-  config.api_key = API_KEY;
-  auth.user.email = USER_EMAIL;
-  auth.user.password = USER_PASSWORD;
-  config.database_url = DATABASE_URL;
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectNetwork(true);
-
-  // Initialize servo
-  garageServo.attach(servoPin);
-
-  // Set initial servo angle to 0 degrees
-  garageServo.write(0);
 ////////////////////////// FLAME SENSOR HERE /////////////////////////////
   pinMode(flamePin, INPUT);  // Set flame sensor pin as input
 ////////////////////////// BUZZER  ///////////////////////////////////  
@@ -103,6 +77,46 @@ void setup()
 garageServo.attach(servoPin);
 //////////////////////////////LED//////////////////////////////
 pinMode(pinLed, OUTPUT);
+////////////////////////////// FIREBASE SETUP /////////////////////////////
+  Serial.begin(115200);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
+  /* Assign the api key (required) */
+  config.api_key = API_KEY;
+
+  /* Assign the user sign in credentials */
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
+
+  /* Assign the RTDB URL (required) */
+  config.database_url = DATABASE_URL;
+
+  // Comment or pass false value when WiFi reconnection will control by your code or third party library e.g. WiFiManager
+  Firebase.reconnectNetwork(true);
+
+  // Since v4.4.x, BearSSL engine was used, the SSL buffer need to be set.
+  // Large data transmission may require larger RX buffer, otherwise connection issue or data read time out can be occurred.
+  fbdo.setBSSLBufferSize(4096 /* Rx buffer size in bytes from 512 - 16384 */, 1024 /* Tx buffer size in bytes from 512 - 16384 */);
+
+  // Limit the size of response payload to be collected in FirebaseData
+  fbdo.setResponseSize(2048);
+
+  Firebase.begin(&config, &auth);
+
+  Firebase.setDoubleDigits(5);
+
+  config.timeout.serverResponse = 10 * 1000;
 }
 
 void loop() {
@@ -172,21 +186,16 @@ void control_garage_door()
   if(read_ultrasonic_distance() <= ultrasonicThreshold && read_ultrasonic_distance() != 0)
   {
     garageServo.write(rightAngle);
-    control_led(ON);
-    update_ultrasonic_onFirebase(true);
-    update_led_onFirebase(ON);
-    update_servo_onFirebase(rightAngle);
+    control_led(1);
   }
   else
   {
     garageServo.write(zeroAngle);
     control_led(0);
   }
-  get_servo_fromFirebase();
-  get_led_fromFirebase();
 }
 ///////////////////////////////////////// LED HERE /////////////////////////
-void control_led(uint8_t switchControl)
+void control_led(byte switchControl)
 {
   if(switchControl == 1)
   {
@@ -228,80 +237,24 @@ int read_ultrasonic_distance()
 void activate_system()
 {
   // activate_buzzer();
-  control_garage_door();
+  // control_garage_door();
+  servo_firebase();
 }
+void servo_firebase()
+{
+  // Firebase.ready() should be called repeatedly to handle authentication tasks.
+  if (Firebase.ready() && (millis() - sendDataPrevMillis > 1000 || sendDataPrevMillis == 0))
+  {
+    sendDataPrevMillis = millis();
 
-//////////////////////////// FIREBASE FUNCTIONS ////////////////////////////
-void update_ultrasonic_onFirebase(bool val)
-{
-   if (Firebase.ready())
-  {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageUltrasonicStatus", val)))
-    {
-      Serial.println("ultrasonic value : ");
-      Serial.print(val);
-    }
-    else
-    {
-      Serial.println("Failed to send distance to Firebase: " + fbdo.errorReason());
-    }
-  }
-}
-void update_led_onFirebase(bool val)
-{
-   if (Firebase.ready())
-  {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageLedStatus", val)))
-    {
-      Serial.println("led value : ");
-      Serial.print(val);
-    }
-    else
-    {
-      Serial.println("Failed to send distance to Firebase: " + fbdo.errorReason());
-    }
-  }
-}
-void update_servo_onFirebase(uint8_t val)
-{
-   if (Firebase.ready())
-  {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageServoAngle", val)))
-    {
-      Serial.println("servo value : ");
-      Serial.print(val);
-    }
-    else
-    {
-      Serial.println("Failed to send distance to Firebase: " + fbdo.errorReason());
-    }
-  }
-}
-void get_servo_fromFirebase()
-{
-    int servoAngle;
-  if (Firebase.RTDB.getInt(&fbdo, "/GarageServoAngle", &servoAngle))
-  {
-    Serial.print("Received servo angle from Firebase: ");
-    Serial.println(servoAngle);
-    garageServo.write(servoAngle);
-  }
-  else
-  {
-    Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
-  }
-}
-void get_led_fromFirebase()
-{
-  bool ledStatus;
-  if (Firebase.RTDB.getInt(&fbdo, "/GarageLedStatus", &ledStatus))
-  {
-    Serial.println("led status is : ");
-    Serial.print(ledStatus);
-    digitalWrite(ledStatus);
-  }
-  else
-  {
-    Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
+   int servoAngle;
+   if(Firebase.RTDB.getInt(&fbdo, "/servoAngle", &servoAngle))
+   {
+    garageServo.write(servoAngle) ;
+   }
+   else
+   {
+    Serial.println(fbdo.errorReason().c_str());
+   }
   }
 }

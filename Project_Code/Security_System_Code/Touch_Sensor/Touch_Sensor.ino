@@ -1,7 +1,7 @@
-#define TOUCH_SENSOR_PIN 2 // Define the digital pin connected to the touch sensor
+#define TOUCH_SENSOR_PIN 3 // Define the digital pin connected to the touch sensor
 
 void setup() {
-  Serial.begin(600); // Initialize serial communication
+  Serial.begin(9600); // Initialize serial communication
   pinMode(TOUCH_SENSOR_PIN, INPUT); // Set the touch sensor pin as input
 }
 
@@ -12,6 +12,9 @@ void loop() {
     Serial.println("Touch detected!"); // Print a message indicating touch detection
     // Add your desired actions here, such as turning on an LED or triggering an event
   }
-  
+  else
+  {
+    Serial.println("NO Touch detected!");
+  }
   delay(100); // Delay for stability and to prevent rapid triggering
 }

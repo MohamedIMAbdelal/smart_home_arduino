@@ -22,7 +22,7 @@ const long interval = 1000; // Interval to check Firebase for updates (milliseco
 
 
 //////////////////////////////////// INCLUDE LIBRARY HERE //////////////////////////////////////////////////////
-#include <Servo.h>
+#include <ESP32Servo.h>
 /////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
 // Define the pins for the FLAME sensor
 #define flamePin A0  // Define the analog pin for flame sensor
@@ -37,20 +37,24 @@ int distance;
 uint8_t ultrasonicThreshold = 70;
 //create servo object
 Servo garageServo;
+
+
 // Define the pin for the servo signal
 #define servoPin 14
 uint8_t zeroAngle = 0;
 uint8_t rightAngle = 90;
+int servoAngle = zeroAngle;
 //define led pin
 #define pinLed 27
-#define ON 1
-#define OFF 0
+#define ON true
+#define OFF false
+bool ledStatus = OFF;
 ////////////////////////////////// FUNCTIONS DECLRATIONS HERE ///////////////////////////////////////////
 int read_flameSensor();//read flame value 
 bool isFlameActivated();//if there is fire return true
 void activate_buzzer();// turn on if there is fire 
 void control_garage_door();//open door 
-void control_led(uint8_t);//turn on/off led
+void control_led(bool);//turn on/off led
 int read_ultrasonicDistance();
 void activate_system();
 ///////////////////FIREBASE FUNCTIONS////////////////
@@ -58,9 +62,10 @@ void update_ultrasonic_onFirebase(bool);
 void update_led_onFirebase(bool);
 void update_servo_onFirebase(uint8_t);
 // void get_ultrasonic_fromFirebase();
-void get_led_fromFirebase();
-void get_servo_fromFirebase();
-
+// void get_led_fromFirebase();
+// void get_servo_fromFirebase();
+// void update_data_fromFirebase(bool);
+// void getUpdate_dataStatus();
 //////////////////////////////// BOOLEAN VARAIBLES HERE //////////////////////////////////////////////
 
 void setup()
@@ -171,24 +176,31 @@ void control_garage_door()
 {
   if(read_ultrasonic_distance() <= ultrasonicThreshold && read_ultrasonic_distance() != 0)
   {
-    garageServo.write(rightAngle);
-    control_led(ON);
+    servoAngle = rightAngle;
+    ledStatus = ON;
+    garageServo.write(servoAngle);
+    control_led(ledStatus);
     update_ultrasonic_onFirebase(true);
-    update_led_onFirebase(ON);
-    update_servo_onFirebase(rightAngle);
+    update_led_onFirebase(ledStatus);
+    update_servo_onFirebase(servoAngle);
   }
+ 
   else
   {
-    garageServo.write(zeroAngle);
-    control_led(0);
-  }
-  get_servo_fromFirebase();
-  get_led_fromFirebase();
+    ledStatus = OFF;
+    servoAngle = zeroAngle;
+    garageServo.write(servoAngle);
+    control_led(ledStatus);
+    update_ultrasonic_onFirebase(false);
+    update_led_onFirebase(ledStatus);
+    update_servo_onFirebase(servoAngle);
+  }  
+  // getUpdate_dataStatus();
 }
 ///////////////////////////////////////// LED HERE /////////////////////////
-void control_led(uint8_t switchControl)
+void control_led(bool switchControl)
 {
-  if(switchControl == 1)
+  if(switchControl)
   {
     digitalWrite(pinLed,HIGH);
     delay(1000);//time to wait until turn off
@@ -236,7 +248,7 @@ void update_ultrasonic_onFirebase(bool val)
 {
    if (Firebase.ready())
   {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageUltrasonicStatus", val)))
+    if (Firebase.RTDB.setInt(&fbdo, "/GarageUltrasonicStatus", val))
     {
       Serial.println("ultrasonic value : ");
       Serial.print(val);
@@ -251,7 +263,7 @@ void update_led_onFirebase(bool val)
 {
    if (Firebase.ready())
   {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageLedStatus", val)))
+    if (Firebase.RTDB.setInt(&fbdo, "/GarageLedStatus", val))
     {
       Serial.println("led value : ");
       Serial.print(val);
@@ -266,7 +278,7 @@ void update_servo_onFirebase(uint8_t val)
 {
    if (Firebase.ready())
   {
-    if (Firebase.RTDB.setInt(&fbdo, "/GarageServoAngle", val)))
+    if (Firebase.RTDB.setInt(&fbdo, "/GarageServoAngle", val))
     {
       Serial.println("servo value : ");
       Serial.print(val);
@@ -277,31 +289,53 @@ void update_servo_onFirebase(uint8_t val)
     }
   }
 }
-void get_servo_fromFirebase()
-{
-    int servoAngle;
-  if (Firebase.RTDB.getInt(&fbdo, "/GarageServoAngle", &servoAngle))
-  {
-    Serial.print("Received servo angle from Firebase: ");
-    Serial.println(servoAngle);
-    garageServo.write(servoAngle);
-  }
-  else
-  {
-    Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
-  }
-}
-void get_led_fromFirebase()
-{
-  bool ledStatus;
-  if (Firebase.RTDB.getInt(&fbdo, "/GarageLedStatus", &ledStatus))
-  {
-    Serial.println("led status is : ");
-    Serial.print(ledStatus);
-    digitalWrite(ledStatus);
-  }
-  else
-  {
-    Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
-  }
-}
+// void get_servo_fromFirebase()
+// {
+
+//   if (Firebase.RTDB.getInt(&fbdo, "/GarageServoAngle", &servoAngle))
+//   {
+//     Serial.print("Received servo angle from Firebase: ");
+//     Serial.println(servoAngle);
+//     garageServo.write(servoAngle);
+//   }
+//   else
+//   {
+//     Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
+//   }
+// }
+// void get_led_fromFirebase()
+// {
+
+//   if (Firebase.RTDB.getInt(&fbdo, "/GarageLedStatus", &ledStatus))
+//   {
+//     Serial.println("led status is : ");
+//     Serial.print(ledStatus);
+//     digitalWrite(pinLed , ledStatus);
+//   }
+//   else
+//   {
+//     Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
+//   }
+// }
+// void getUpdate_dataStatus()
+// {
+//   bool updateData = false;
+//   if (Firebase.RTDB.getInt(&fbdo, "/updateDataStatus", &updateData))
+//   {
+//     Serial.println("status : ");
+//     Serial.print(updateData);
+//     update_data_fromFirebase(updateData);
+//   }
+//   else
+//   {
+//     Serial.println("Error reading servo angle from Firebase: " + fbdo.errorReason());
+//   }
+// }
+// void update_data_fromFirebase(bool val)
+// {
+//   if(val)
+//   {
+//     get_servo_fromFirebase();
+//     get_led_fromFirebase();
+//   }
+// }

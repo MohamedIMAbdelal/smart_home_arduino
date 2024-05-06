@@ -20,7 +20,8 @@ uint16_t flameThreshold = 500;
 uint8_t ON = 1;//indicator for led is on
 uint8_t OFF = 0;//indicator for led is off
 #define pirPin 2 // Define the digital pin connected to the PIR sensor
-
+#define ON 1
+#define OFF 0
 #define DHTPIN 3          // Pin to which the DHT11 sensor is connected
 #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
 DHT dht(DHTPIN, DHTTYPE); //create instance of class DHT 
@@ -185,23 +186,39 @@ void activate_system()
   // }
 
   // control_fan(leftDirection);//dht 11
-  if(isTouchSensorActivated() && read_irSensor() == false && isInside == false)//coming from outside to inside
+  // if(isTouchSensorActivated() && read_irSensor() == false && isInside == false)//coming from outside to inside
+  // {
+  //   control_led(ON);
+  //   isInside  = true;
+  //   isTouched = true;
+  // }
+  // else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == true)//getting out from inside to outside
+  // {
+  //   control_led(OFF);
+  //   isInside  = false;
+  // }
+  // else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == false)
+  // {
+  //   buzzer_sirenSound(ON);
+  //   delay(1000);
+  //   buzzer_sirenSound(OFF);
+  //   delay(1000);
+  // }
+  if(isTouchSensorActivated())
   {
+    while(read_irSensor())
+    {
+      Serial.print(read_irSensor());
+    }
     control_led(ON);
-    isInside  = true;
-    isTouched = true;
   }
-  else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == true)//getting out from inside to outside
+  else
   {
-    control_led(OFF);
-    isInside  = false;
-  }
-  else if(!isTouchSensorActivated() && read_irSensor() == false && isInside == false)
-  {
+    if(read_irSensor())
+    {
+      Serial.print(read_irSensor());
+    }
     buzzer_sirenSound(ON);
-    delay(1000);
-    buzzer_sirenSound(OFF);
-    delay(1000);
   }
 }
 /////////////////////////////// DHT 11 SENSOR ///////////////////////////
