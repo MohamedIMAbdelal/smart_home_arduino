@@ -9,15 +9,6 @@
 #include<Arduino.h>
 #include<stdint.h>
 
-/////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
-// Define the pins for the FLAME sensor
-#define flamePin A1  // Define the analog pin for flame sensor
-#define buzzerPin 48  // Define the digital pin for the buzzer
-#define pinLed 49
-#define ON 1
-#define OFF 0
-#define MQ2_SENSOR_PIN A2
-#define pirPin 44 // Define the digital pin connected to the PIR sensor
 class Kitchen
 {
   private:
@@ -34,12 +25,6 @@ class Kitchen
   void setup();
   void loop();
 };
-
-
-
-
-
-
 
 
 #endif

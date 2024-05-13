@@ -9,18 +9,15 @@
 #include <Servo.h>
 /////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
 // Define the pins for the FLAME sensor
-#define flamePin A0  // Define the analog pin for flame sensor
-#define buzzerPin 48  // Define the digital pin for the buzzer
-// Define the pins for the ULTRASONIC sensor
-#define trigPin  46 // Trigger pin
-#define echoPin  47 // Echo pin
-// Define the pin for the servo signal
-#define servoPin 7
-//define led pin
-#define pinLed 49
-
-
-
+// #define flamePin A0  // Define the analog pin for flame sensor
+// #define buzzerPin 48  // Define the digital pin for the buzzer
+// // Define the pins for the ULTRASONIC sensor
+// #define trigPin  46 // Trigger pin
+// #define echoPin  47 // Echo pin
+// // Define the pin for the servo signal
+// #define servoPin 7
+// //define led pin
+// #define pinLed 49
 
 class Garage
 {

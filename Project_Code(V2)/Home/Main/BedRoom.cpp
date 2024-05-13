@@ -8,14 +8,12 @@ BedRoom::BedRoom(uint8_t val)
 }
 void BedRoom::setup()
 {
-///////////////////////////////SERIAL MONITOR //////////////////////
-  Serial.begin(9600); // Initialize serial communication
 /////////////////////////////// ULTRASONIC  //////////////////////
 // Set trigger pin as an output and echo pin as an input
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(BedroomUltraTrig, OUTPUT);
+  pinMode(BedroomUltraEcho, INPUT);
 //////////////////////////////LED//////////////////////////////
-  pinMode(LedPin, OUTPUT);
+  pinMode(BedroomLed, OUTPUT);
 }
 void BedRoom::loop()
 {
@@ -32,7 +30,7 @@ void BedRoom::control_led(uint8_t switchControl)
 {
   if(switchControl == 1)
   {
-    digitalWrite(LedPin,HIGH);
+    digitalWrite(BedroomLed,HIGH);
     delay(1000);//time to wait until turn off
   }
   
@@ -43,16 +41,16 @@ void BedRoom::control_led(uint8_t switchControl)
 uint16_t BedRoom::read_ultrasonic_distance()
 {
   // Clear the trigger pin
-  digitalWrite(trigPin, LOW);
+  digitalWrite(BedroomUltraTrig, LOW);
   delayMicroseconds(2);
   
   // Send a 10 microsecond pulse to the trigger pin
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(BedroomUltraTrig, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(BedroomUltraTrig, LOW);
   
   // Measure the duration of the pulse on the echo pin
-  duration = pulseIn(echoPin, HIGH);
+  duration = pulseIn(BedroomUltraEcho, HIGH);
   
   // Calculate the distance in centimeters
   distance = duration * 0.034 / 2;

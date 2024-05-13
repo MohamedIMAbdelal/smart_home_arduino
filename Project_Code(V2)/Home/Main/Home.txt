@@ -1,0 +1,52 @@
+--------------------------------------
+PIN LAYOUT FOR ARDUINO MEGA 2560:
+--------------------------------------
+
+GARAGE:
+FLAME A0
+BUZZER 48
+ULTRASONIC TRIG 46
+ULTRASONIC ECHO 47
+SERVO 7
+LED 
+
+--------------------------------------
+
+KITCHEN:
+FLAME A1
+BUZZER 48
+LED 
+SMOKE A2
+PIR MOTITON 44
+--------------------------------------
+BEDROOM : 
+ULTRASONIC TRIG 11
+ULTRASONIC ECHO 12
+LED 
+--------------------------------------
+
+BATHROOM:
+LED 
+BUZZER 48
+IR 9
+DHT 
+--------------------------------------
+
+LIVINGROOM:
+FLAME A3
+BUZZER 48
+LED
+TOUCH 6
+DHT
+
+--------------------------------------
+ 
+GARDEN:
+LDR A5
+LED 
+RFID 
+SERVO_01
+SERVO_02
+
+
+--------------------------------------

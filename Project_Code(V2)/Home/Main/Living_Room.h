@@ -7,20 +7,17 @@
 /////////////////////////////////////// PIN DIAGRAM FOR ARDUINO /////////////////////////
 #include<Arduino.h>
 #include<stdint.h>
-#include <DHT.h>
 
 /////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
 // Define the pins for the FLAME sensor
-#define flamePin A3  // Define the analog pin for flame sensor
-#define buzzerPin 48  // Define the digital pin for the buzzer
-#define pinLed 49
-#define TOUCH_SENSOR_PIN 6 // Define the digital pin connected to the touch sensor
-#define irPin 8
-#define ON 1
-#define OFF 0
+// #define flamePin A3  // Define the analog pin for flame sensor
+// #define buzzerPin 48  // Define the digital pin for the buzzer
+// #define pinLed 49
+// #define TOUCH_SENSOR_PIN 6 // Define the digital pin connected to the touch sensor
+// #define irPin 8
+// #define ON 1
+// #define OFF 0
 
-// #define DHTPIN 3          // Pin to which the DHT11 sensor is connected
-// #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
 
 //random val
 class Living_Room
@@ -34,9 +31,9 @@ class Living_Room
     bool isTouchSensorActivated();//to enter home and activate leds
     uint8_t read_irSensor();
     void control_led(uint8_t switchControl);
-    // float read_temperature();//with fan
-    // float read_humidity();// not used here
-    // uint8_t tempThreshold = 25;//25 C
+    float read_temperature();//with fan
+    float read_humidity();// not used here
+    uint8_t tempThreshold = 25;//25 C
     // uint8_t humidityThreshold = 30;
   public:
   Living_Room();
