@@ -1,6 +1,8 @@
 #include "Living_Room.h"
 #include<Arduino.h>
 #include<stdint.h>
+#include"PinsLayout.h"
+
 #include<DHT.h>
 // #define DHTPIN 5          // Pin to which the DHT11 sensor is connected
 #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)

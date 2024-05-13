@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "BedRoom.h"
 #include <Arduino.h>
+#include"PinsLayout.h"
+
 BedRoom::BedRoom(uint8_t val)
 {
   Serial.println("instance of BedRoom class Created");
@@ -35,7 +37,7 @@ void BedRoom::control_led(uint8_t switchControl)
   }
   
   else
-   digitalWrite(LedPin,LOW);
+   digitalWrite(BedroomLed,LOW);
 }
 /////////////////////////////////////// ULTRASONIC HERE ///////////////////
 uint16_t BedRoom::read_ultrasonic_distance()

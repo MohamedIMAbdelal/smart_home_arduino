@@ -46,8 +46,8 @@ class Garage
 
   public:
   Garage();//constructor
-  setup();//main setup 
-  loop();// main loop
+  void setup();//main setup 
+  void loop();// main loop
 
 };
 

@@ -3,14 +3,6 @@
 #include"stdint.h"
 #include"Arduino.h"
 
-// Define the pins for the ULTRASONIC sensor
-// #define trigPin  11 // Trigger pin
-// #define echoPin  12 // Echo pin
-// #define LedPin 49
-// //define led pin
-// // #define pinLed 49
-// #define ON 1
-// #define OFF 0
 class BedRoom
 {
   private:
