@@ -1,10 +1,6 @@
 #include <stdint.h>
 #include "Home.h"
 #include <Arduino.h>
-// #include<DHT.h>
-// #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
-// DHT dht_01(BathroomDhtSensor, DHTTYPE); //create instance of class DHT
-// DHT dht_02(BathroomDhtSensor, DHTTYPE); //create instance of class DHT
 
 Kitchen myKitchen;
 Garage myGarage;
@@ -26,18 +22,27 @@ void Home::setup()
 // pinMode();//Keypad
 
   myLiving.setup();
+  delay(50);
   myGarage.setup();
+  delay(50);
   myBedRoom.setup();
+  delay(50);
   myBathRoom.setup();
+  delay(50);
   myKitchen.setup();
-  // pinMode(BathroomDhtSensor,INPUT);
-  // dht.begin();
+  delay(50);
+
 }
 void Home::loop()
 {
   myLiving.loop();
+  delay(50);
   myGarage.loop();
+  delay(50);
   myBedRoom.loop();
+  delay(50);
   myBathRoom.loop();
+  delay(50);
   myKitchen.loop();
+  delay(50);
 }

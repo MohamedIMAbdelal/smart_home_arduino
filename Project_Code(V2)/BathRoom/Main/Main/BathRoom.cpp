@@ -2,7 +2,7 @@
 #include<Arduino.h>
 #include<stdint.h>
 #include<DHT.h>
-#define DHTPIN 5          // Pin to which the DHT11 sensor is connected
+#define DHTPIN 44          // Pin to which the DHT11 sensor is connected
 #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
 DHT dht(DHTPIN, DHTTYPE); //create instance of class DHT
 BathRoom::BathRoom()
@@ -28,7 +28,7 @@ void BathRoom::loop()
   {
     control_led(ON);
   }
-  if(read_humidity() >= 25)
+  if(read_humidity() >= 20)
   {
     buzzer_sirenSound(ON);
   }

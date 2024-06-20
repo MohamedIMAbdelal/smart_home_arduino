@@ -12,8 +12,8 @@
 /////////////////////////////////// GLOBAL VARIABLES HERE //////////////////////////////////////////////////////
 // Define the pins for the FLAME sensor
 #define flamePin A1  // Define the analog pin for flame sensor
-#define buzzerPin 48  // Define the digital pin for the buzzer
-#define pinLed 49
+#define buzzerPin 29  // Define the digital pin for the buzzer
+#define pinLed 9
 #define ON 1
 #define OFF 0
 #define MQ2_SENSOR_PIN A2
@@ -21,7 +21,7 @@
 class Kitchen
 {
   private:
-  uint16_t flameThreshold = 500;
+  uint16_t flameThreshold = 90;
     int read_flameSensor();//read flame value 
     bool isFlameActivated();//if there is fire return true
     void activate_buzzer();// turn on if there is fire 

@@ -57,7 +57,7 @@
 //////////////////////////////// ULTRASONIC SENSOR /////////////////////////////
 #define GarageUltraTrig 49
 #define GarageUltraEcho 48
-#define BedroomUltraTrig 40
+#define BedroomUltraTrig 42
 #define BedroomUltraEcho 39
 //////////////////////////////// SMOKE SENSOR /////////////////////////////
 #define KitchenSmokeSensor A2
@@ -72,7 +72,7 @@
 #define LivingIrSensor 50
 #define BathroomIrSensor 45
 //////////////////////////////// BUZZER /////////////////////////////
-#define BUZZER 29//GLOBAL (ACCESS FROM ALL SYSTEMS)
+#define BUZZER 31//GLOBAL (ACCESS FROM ALL SYSTEMS)
 //////////////////////////////// LCD /////////////////////////////
 
 //////////////////////////////// KEYPAD SENSOR /////////////////////////////
@@ -82,17 +82,16 @@
 #define PeopleServoDoor 00//GARDEN PEOPLE DOOOR
 #define CarServoDoor 00//GARDEN CAR DOOR
 //////////////////////////////// LDR SENSOR /////////////////////////////
-#define GardenLdrSensor A8
+#define GardenLdrSensor 00
 //////////////////////////////// RFID /////////////////////////////
 
 //////////////////////////////// LEDS /////////////////////////////
-#define GarageLed 12
-#define KitchenLed 9
-#define LivingLed 10
-#define LivingLed2 11
-#define BedroomLed 13
-#define BathroomLed 8 
-#define GardenLed 31
+#define GarageLed 00
+#define KitchenLed 00 
+#define LivingLed 00
+#define BedroomLed 00
+#define BathroomLed 00 
+#define GardenLed 00 
 //////////////////////////////// FAN MOTOR /////////////////////////////
 //////////////////////////////// ON/OFF STATE /////////////////////////////
 #define ON 1

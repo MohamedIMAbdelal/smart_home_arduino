@@ -1,6 +1,10 @@
 #include "Living_Room.h"
 #include<Arduino.h>
 #include<stdint.h>
+#include<DHT.h>
+#define DHTPIN 52          // Pin to which the DHT11 sensor is connected
+#define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
+DHT dht(DHTPIN, DHTTYPE); //create instance of class DHT
 Living_Room::Living_Room()
 {
   Serial.println("Living_Room is inited");
@@ -18,31 +22,41 @@ void Living_Room::setup()
 ///////////////////////IR SENSOR ///////////////////////
   pinMode(irPin,INPUT);
   // //////////////////////////DHT11 SENSOR ///////////////////////
-  // pinMode(DHTPIN,INPUT);
-  // dht.begin();
+  pinMode(DHTPIN,INPUT);
+  dht.begin();
 
 }
 
 void Living_Room::loop()
 {
   activate_buzzer();
-  if(isTouchSensorActivated())
+  // if(isTouchSensorActivated())
+  // {
+  //   while(read_irSensor())
+  //   {
+  //     Serial.print(read_irSensor());
+  //   }
+  //   control_led(ON);
+  // }
+  // else
+  // {
+  //   if(read_irSensor())
+  //   {
+  //     Serial.print(read_irSensor());
+  //   }
+  //   else
+  //     buzzer_sirenSound(ON);
+  // }
+  if(read_irSensor())
   {
-    while(read_irSensor())
-    {
-      Serial.print(read_irSensor());
-    }
     control_led(ON);
   }
-  else
+  if(read_temperature() >= 35)
   {
-    if(read_irSensor())
-    {
-      Serial.print(read_irSensor());
-    }
-    else
-      buzzer_sirenSound(ON);
+    buzzer_sirenSound(ON);
   }
+  // else
+  //   buzzer_sirenSound(OFF);
   // if(!read_irSensor())
   // {
   //   control_led(ON);
@@ -62,7 +76,7 @@ int Living_Room::read_flameSensor()
 
 bool Living_Room::isFlameActivated()
 {
-  if(read_flameSensor() <= flameThreshold)
+  if(read_flameSensor() <= 60)
   {
     return true;
   }
@@ -116,7 +130,10 @@ bool Living_Room::isTouchSensorActivated()
     Serial.println("Touch detected!"); // Print a message indicating touch detection
   }
   else
+  {
     Serial.println("Not Touch detected!");
+  }
+    
   delay(100); // Delay for stability and to prevent rapid triggering
   return touchValue;
 }
@@ -133,9 +150,52 @@ void Living_Room::control_led(uint8_t switchControl)
   if(switchControl == 1)
   {
     digitalWrite(pinLed,HIGH);
+    digitalWrite(pinLed2,HIGH);
     delay(1000);//time to wait until turn off
   }
   
   else
    digitalWrite(pinLed,LOW);
+   digitalWrite(pinLed2,HIGH);
+}
+float Living_Room::read_temperature()
+{
+  // Read temperature (in Celsius) from DHT sensor
+  float temperatureC = dht.readTemperature();
+
+  // Check if any reads failed and exit early (to try again)
+  if (isnan(temperatureC)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  else
+  {
+    // Print temperature and humidity values
+    Serial.print("Temperature: ");
+    Serial.print(temperatureC);
+    Serial.println(" °C");
+  }
+  
+  delay(2000);  // Delay to stabilize sensor
+  return temperatureC;
+}
+
+float Living_Room::read_humidity()
+{
+  // Read humidity from DHT sensor
+  float humidity = dht.readHumidity();
+
+  // Check if any reads failed and exit early (to try again)
+  if (isnan(humidity)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  else
+  {
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+  }
+  delay(2000);  // Delay to stabilize sensor
+  return humidity;
 }

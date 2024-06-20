@@ -6,7 +6,7 @@
 #include<DHT.h>
 // #define DHTPIN 5          // Pin to which the DHT11 sensor is connected
 #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
-DHT dht(LivingDhtSensor, DHTTYPE); //create instance of class DHT
+DHT Living_dht(LivingDhtSensor, DHTTYPE); //create instance of class DHT
 Living_Room::Living_Room()
 {
   Serial.println("Living_Room is inited");
@@ -23,7 +23,7 @@ void Living_Room::setup()
   pinMode(LivingIrSensor,INPUT);
   // //////////////////////////DHT11 SENSOR ///////////////////////
   pinMode(LivingDhtSensor,INPUT);
-  dht.begin();
+  Living_dht.begin();
 
 }
 
@@ -146,7 +146,7 @@ void Living_Room::control_led(uint8_t switchControl)
 float Living_Room::read_temperature()
 {
   // Read temperature (in Celsius) from DHT sensor
-  float temperatureC = dht.readTemperature();
+  float temperatureC = Living_dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again)
   if (isnan(temperatureC)) {
@@ -168,7 +168,7 @@ float Living_Room::read_temperature()
 float Living_Room::read_humidity()
 {
   // Read humidity from DHT sensor
-  float humidity = dht.readHumidity();
+  float humidity = Living_dht.readHumidity();
 
   // Check if any reads failed and exit early (to try again)
   if (isnan(humidity)) {

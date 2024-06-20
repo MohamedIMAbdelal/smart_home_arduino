@@ -35,7 +35,7 @@ int Kitchen::read_flameSensor()
 {
   int flameValue = analogRead(KitchenFlame);  // Read the analog value from flame sensor
   Serial.print("Flame Value: ");
-  // Serial.println(flameValue);  // Print the flame sensor value to serial monitor
+  Serial.println(flameValue);  // Print the flame sensor value to serial monitor
   delay(500);  // Delay for 0.5 seconds before next reading
   return flameValue;
 }

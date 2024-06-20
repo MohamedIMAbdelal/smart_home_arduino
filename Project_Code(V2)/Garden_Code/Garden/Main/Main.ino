@@ -1,13 +1,13 @@
 #include <stdint.h>
-#include "Home.h"
-#include <Arduino.h>
-Home myHome;
+#include "Garden.h"
+
+Garden myGarden;
 void setup() {
   // put your setup code here, to run once:
-myHome.setup();
+  myGarden.setup();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-myHome.loop();
+  myGarden.loop();
 }

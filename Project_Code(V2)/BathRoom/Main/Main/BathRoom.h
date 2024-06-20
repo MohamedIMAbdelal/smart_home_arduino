@@ -9,10 +9,10 @@
 #include<stdint.h>
 
 
-#define buzzerPin 48  // Define the digital pin for the buzzer
+#define buzzerPin 29  // Define the digital pin for the buzzer
 
-#define pinLed 49
-#define irPin 9
+#define pinLed 8
+#define irPin 45
 #define ON 1
 #define OFF 0
 

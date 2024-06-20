@@ -2,9 +2,10 @@
 #include<Arduino.h>
 #include<stdint.h>
 #include<DHT.h>
+#include"PinsLayout.h"
 // #define DHTPIN 5          // Pin to which the DHT11 sensor is connected
 #define DHTTYPE DHT11     // Type of the DHT sensor (DHT11 or DHT22)
-DHT dht(BathroomDhtSensor, DHTTYPE); //create instance of class DHT
+DHT Bathroom_dht(BathroomDhtSensor, DHTTYPE); //create instance of class DHT
 BathRoom::BathRoom()
 {
   Serial.println("Living_Room is inited");
@@ -16,7 +17,7 @@ void BathRoom::setup()
   pinMode(BathroomIrSensor,INPUT);
   pinMode(BathroomDhtSensor,INPUT);
   pinMode(BathroomLed,OUTPUT);
-  dht.begin();
+  Bathroom_dht.begin();
 
 }
 
@@ -78,7 +79,7 @@ void BathRoom::control_led(uint8_t switchControl)
 float BathRoom::read_temperature()
 {
   // Read temperature (in Celsius) from DHT sensor
-  float temperatureC = dht.readTemperature();
+  float temperatureC = Bathroom_dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again)
   if (isnan(temperatureC)) {
@@ -100,7 +101,7 @@ float BathRoom::read_temperature()
 float BathRoom::read_humidity()
 {
   // Read humidity from DHT sensor
-  float humidity = dht.readHumidity();
+  float humidity = Bathroom_dht.readHumidity();
 
   // Check if any reads failed and exit early (to try again)
   if (isnan(humidity)) {

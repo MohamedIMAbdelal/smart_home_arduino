@@ -4,9 +4,9 @@
 #include"Arduino.h"
 
 // Define the pins for the ULTRASONIC sensor
-#define trigPin  11 // Trigger pin
-#define echoPin  12 // Echo pin
-#define LedPin 49
+#define trigPin  40 // Trigger pin
+#define echoPin  39 // Echo pin
+#define LedPin 13
 //define led pin
 // #define pinLed 49
 #define ON 1

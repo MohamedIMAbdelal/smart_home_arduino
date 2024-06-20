@@ -1,10 +1,11 @@
 // Define the pin for LDR
-const int ldrPin = A5;
-#define BUZZER 48
+const int ldrPin = A0;
+#define BUZZER 13
 void setup() {
   // Initialize serial communication
   Serial.begin(9600);
   pinMode(ldrPin,INPUT);
+  pinMode(BUZZER,OUTPUT);
 }
 
 void loop() {

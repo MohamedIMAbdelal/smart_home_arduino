@@ -8,6 +8,7 @@ Garage::Garage()
 }
 void Garage::setup()
 {
+   Serial.begin(9600);
   ////////////////////////// FLAME SENSOR HERE /////////////////////////////
   pinMode(GarageFlame, INPUT);  // Set flame sensor pin as input
 /////////////////////////////// ULTRASONIC  //////////////////////
@@ -18,6 +19,7 @@ void Garage::setup()
   garageServo.attach(GarageServo);
 //////////////////////////////LED//////////////////////////////
   pinMode(GarageLed, OUTPUT);
+  garageServo.write(180);
 }
 void Garage::loop()
 {

@@ -35,7 +35,7 @@ int Kitchen::read_flameSensor()
 {
   int flameValue = analogRead(flamePin);  // Read the analog value from flame sensor
   Serial.print("Flame Value: ");
-  // Serial.println(flameValue);  // Print the flame sensor value to serial monitor
+  Serial.println(flameValue);  // Print the flame sensor value to serial monitor
   delay(500);  // Delay for 0.5 seconds before next reading
   return flameValue;
 }
@@ -107,7 +107,7 @@ bool Kitchen::read_smokeValue()
   Serial.println(sensorValue);
   
   // If the sensor value exceeds a certain threshold, indicate gas detection
-  if (sensorValue <= 800) 
+  if (sensorValue <= 100) 
   {
     Serial.println("Gas detected!");
     return true;

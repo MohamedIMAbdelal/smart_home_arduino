@@ -20,6 +20,7 @@ Garage::setup()
   pinMode(echoPin, INPUT);
 ////////////////////////////////////////SERVO//////////////////////
   garageServo.attach(servoPin);
+  garageServo.write(180);
 //////////////////////////////LED//////////////////////////////
   pinMode(pinLed, OUTPUT);
 }
@@ -42,7 +43,7 @@ uint16_t Garage::read_flameSensor()
 
 bool Garage::isFlameActivated()
 {
-  if(read_flameSensor() <= flameThreshold)
+  if(read_flameSensor() <= 60)
   {
     return true;
   }
@@ -100,7 +101,7 @@ void Garage::control_garage_door()
   }
   else
   {
-    control_led(0);
+    // control_led(0);
   }
 }
 ///////////////////////////////////////// LED HERE /////////////////////////
